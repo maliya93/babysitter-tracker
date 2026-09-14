@@ -4,351 +4,727 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baby Sitter Attendance & Salary Tracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --primary: #4f46e5;
-            --primary-light: #e0e7ff;
-            --success: #10b981;
-            --success-light: #d1fae5;
-            --danger: #ef4444;
-            --danger-light: #fee2e2;
-            --warning: #f59e0b;
-            --warning-light: #fef3c7;
-            --border: #e2e8f0;
-            --radius: 12px;
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        },
+                        holiday: {
+                            50: '#fefce8',
+                            100: '#fef9c3',
+                            200: '#fef08a',
+                            300: '#fde047',
+                            800: '#854d0e',
+                        }
+                    }
+                }
+            }
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+    </script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #1e293b;
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
-        .header h1 {
-            font-size: 1.5rem;
-            color: var(--text-main);
-        }
-
-        .month-picker {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: var(--card-bg);
-            padding: 8px 16px;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-        }
-
-        .month-picker input {
-            border: none;
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--primary);
-            outline: none;
-            cursor: pointer;
-        }
-
-        .stats-grid {
+        .calendar-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
         }
-
-        .stat-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        .day-cell {
+            min-height: 115px;
+            transition: all 0.2s ease-in-out;
         }
-
-        .stat-card .label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            font-weight: 500;
-            margin-bottom: 8px;
+        .day-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
-
-        .stat-card .value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-main);
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-
-        .table-container {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            overflow-x: auto;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            min-width: 900px;
-        }
-
-        th {
+        ::-webkit-scrollbar-track {
             background: #f1f5f9;
-            padding: 14px 16px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border);
         }
-
-        td {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.9rem;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        input, select {
-            padding: 8px 10px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            font-size: 0.85rem;
-            outline: none;
-            width: 100%;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--primary);
-        }
-
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-
-        .status-present { background: var(--success-light); color: var(--success); }
-        .status-absent { background: var(--danger-light); color: var(--danger); }
-        .status-half { background: var(--warning-light); color: var(--warning); }
-
-        .btn-export {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .btn-export:hover {
-            opacity: 0.9;
-        }
-
-        @media (max-width: 600px) {
-            body { padding: 12px; }
-            .header h1 { font-size: 1.2rem; }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
         }
     </style>
 </head>
-<body>
-
-    <div class="header">
-        <div>
-            <h1>Baby Sitter Attendance & Salary</h1>
-            <p style="color: var(--text-muted); font-size: 0.85rem;">Track daily attendance, times, and payout balance</p>
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <div class="month-picker">
-                <input type="month" id="monthSelect" value="2026-09" onchange="renderTable()">
+<body class="min-h-screen pb-12">
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-brand-500/20">
+                    <i class="fa-solid fa-baby-carriage"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-800 tracking-tight">Baby Sitter Attendance & Salary Tracker</h1>
+                    <p class="text-xs text-slate-500 font-medium">Daily attendance, timings, holidays & automatic 50/50 payment split</p>
+                </div>
             </div>
-            <button class="btn-export" onclick="exportCSV()">Export CSV</button>
-        </div>
-    </div>
 
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="label">Worked Days</div>
-            <div class="value" id="statDays">0 Days</div>
-        </div>
-        <div class="stat-card">
-            <div class="label">Total Earned</div>
-            <div class="value" style="color: var(--primary);" id="statTotal">Rs. 0</div>
-        </div>
-        <div class="stat-card">
-            <div class="label">Advances Taken</div>
-            <div class="value" style="color: var(--danger);" id="statAdvance">Rs. 0</div>
-        </div>
-        <div class="stat-card">
-            <div class="label">Balance Payable</div>
-            <div class="value" style="color: var(--success);" id="statBalance">Rs. 0</div>
-        </div>
-    </div>
+            <!-- Month Selector & Global Actions -->
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white hover:shadow-xs transition" title="Previous Month">
+                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                    </button>
+                    <input type="month" id="monthPicker" value="2026-09" onchange="onMonthSelect()" class="bg-transparent font-bold text-slate-700 text-sm px-3 focus:outline-none cursor-pointer">
+                    <button onclick="changeMonth(1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white hover:shadow-xs transition" title="Next Month">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                </div>
 
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 120px;">Date</th>
-                    <th style="width: 130px;">Status</th>
-                    <th style="width: 110px;">In Time</th>
-                    <th style="width: 110px;">Out Time</th>
-                    <th style="width: 110px;">Rate (LKR)</th>
-                    <th style="width: 110px;">Advance (LKR)</th>
-                    <th>Remark</th>
-                </tr>
-            </thead>
-            <tbody id="attendanceBody"></tbody>
-        </table>
+                <button onclick="exportCSV()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xs transition">
+                    <i class="fa-solid fa-file-csv text-sm"></i>
+                    <span>Export CSV</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+
+        <!-- Top Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Total Worked Days Card -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Worked Days</p>
+                    <h3 id="statWorkedDays" class="text-2xl font-extrabold text-slate-800">0 Days</h3>
+                    <p id="statWorkedSub" class="text-xs text-slate-500 mt-1">0 Full | 0 Half</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+            </div>
+
+            <!-- Total Gross Salary Card -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Total Earned</p>
+                    <h3 id="statGrossSalary" class="text-2xl font-extrabold text-brand-600">LKR 0</h3>
+                    <p class="text-xs text-slate-500 mt-1">Rate @ LKR <span id="statDefaultRate">1,300</span>/day</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+            </div>
+
+            <!-- Total Advance Card -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Total Advances</p>
+                    <h3 id="statTotalAdvance" class="text-2xl font-extrabold text-rose-500">LKR 0</h3>
+                    <p class="text-xs text-slate-500 mt-1">Advances / Partials taken</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+            </div>
+
+            <!-- Net Balance Payable Card -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Net Balance Payable</p>
+                    <h3 id="statNetBalance" class="text-2xl font-extrabold text-emerald-600">LKR 0</h3>
+                    <p class="text-xs text-emerald-600/80 font-medium mt-1">Earned minus advances</p>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold">
+                    <i class="fa-solid fa-money-bill-wave"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-sliders text-brand-600 text-lg"></i>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold text-slate-700">Standard Daily Rate (LKR):</span>
+                    <input type="number" id="globalDailyRate" value="1300" onchange="updateGlobalRate()" class="w-28 px-3 py-1.5 border border-slate-300 rounded-lg text-sm font-bold text-slate-800 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-4 text-xs font-semibold">
+                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Present</div>
+                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Half Day</div>
+                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-slate-300 inline-block"></span> Absent</div>
+                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-300 border border-amber-400 inline-block"></span> Holiday / Poya</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <!-- Day Names Header -->
+            <div class="calendar-grid bg-slate-100/80 border-b border-slate-200 text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-3">
+                <div>Sun</div>
+                <div>Mon</div>
+                <div>Tue</div>
+                <div>Wed</div>
+                <div>Thu</div>
+                <div>Fri</div>
+                <div>Sat</div>
+            </div>
+
+            <!-- Calendar Days Grid -->
+            <div id="calendarGrid" class="calendar-grid bg-slate-200 gap-px">
+                <!-- Dynamic Day Cells Generated via JS -->
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 relative overflow-hidden">
+            <!-- Background Decorative Blur Circle -->
+            <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-800">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 text-xs font-semibold mb-2">
+                        <i class="fa-solid fa-scale-balanced"></i> Auto 50/50 Equal Split
+                    </div>
+                    <h2 class="text-2xl font-bold tracking-tight">Monthly Payment Split</h2>
+                    <p class="text-xs text-slate-400 mt-1">Automated equal share contribution of remaining net balance payable</p>
+                </div>
+                
+                <div class="bg-slate-800/80 backdrop-blur-md px-6 py-3 rounded-2xl border border-slate-700/60 flex items-center gap-4">
+                    <span class="text-xs text-slate-400 font-medium">Total Net Payable:</span>
+                    <span id="splitTotalBalance" class="text-2xl font-extrabold text-emerald-400">LKR 0</span>
+                </div>
+            </div>
+
+            <!-- Split Share Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <!-- Malith's Share -->
+                <div class="bg-slate-800/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/60 hover:border-brand-500/50 transition">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg font-bold">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-100">Malith's Share</h4>
+                                <p class="text-xs text-slate-400">50% Contribution</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-semibold bg-blue-500/20 text-blue-300 px-2.5 py-1 rounded-lg">Half Share</span>
+                    </div>
+                    <div class="text-3xl font-extrabold text-white tracking-tight" id="malithAmount">
+                        LKR 0
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2">Amount to pay to Baby Sitter</p>
+                </div>
+
+                <!-- Shyamini's Share -->
+                <div class="bg-slate-800/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/60 hover:border-purple-500/50 transition">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-lg font-bold">
+                                <i class="fa-solid fa-user-nurse"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-100">Shyamini's Share</h4>
+                                <p class="text-xs text-slate-400">50% Contribution</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-semibold bg-purple-500/20 text-purple-300 px-2.5 py-1 rounded-lg">Half Share</span>
+                    </div>
+                    <div class="text-3xl font-extrabold text-white tracking-tight" id="shyaminiAmount">
+                        LKR 0
+                    </div>
+                    <p class="text-xs text-slate-400 mt-2">Amount to pay to Baby Sitter</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="dayModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 transition-all scale-95 opacity-0" id="dayModalCard">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
+                <div>
+                    <h3 id="modalDateTitle" class="text-lg font-bold text-slate-800">Edit Day Details</h3>
+                    <p id="modalDateSubtitle" class="text-xs text-slate-500">Update work status, time slots, rate & advance</p>
+                </div>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="holidayBanner" class="hidden mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium flex items-center gap-2">
+                <i class="fa-solid fa-sun text-amber-500 text-sm"></i>
+                <span id="holidayBannerText">Holiday</span>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Status Select Buttons -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Attendance Status</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="setModalStatus('present')" id="btnStatusPresent" class="py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 transition">
+                            <i class="fa-solid fa-check text-sm"></i> Present
+                        </button>
+                        <button type="button" onclick="setModalStatus('halfday')" id="btnStatusHalf" class="py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 transition">
+                            <i class="fa-solid fa-clock-rotate-left text-sm"></i> Half Day
+                        </button>
+                        <button type="button" onclick="setModalStatus('absent')" id="btnStatusAbsent" class="py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 transition">
+                            <i class="fa-solid fa-xmark text-sm"></i> Absent
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Timing Inputs -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">In Time</label>
+                        <input type="time" id="modalInTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Out Time</label>
+                        <input type="time" id="modalOutTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                    </div>
+                </div>
+
+                <!-- Financial Inputs -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Daily Rate (LKR)</label>
+                        <input type="number" id="modalRate" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Advance Given (LKR)</label>
+                        <input type="number" id="modalAdvance" placeholder="0" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-rose-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                    </div>
+                </div>
+
+                <!-- Remark / Note -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Remarks / Note</label>
+                    <input type="text" id="modalRemark" placeholder="e.g. Came 20 mins late, brought extra baby milk powder" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-end gap-3 mt-8 pt-4 border-t border-slate-100">
+                <button onclick="closeModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">Cancel</button>
+                <button onclick="saveDayDetails()" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-500/20 transition">Save Changes</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        const DEFAULT_RATE = 1300;
+        // Sri Lankan Poya & Major Public/Bank/Mercantile Holidays (2026 & 2027)
+        const sriLankaHolidays = {
+            // 2026 Holidays
+            "2026-01-03": "Duruthu Poya",
+            "2026-01-15": "Tamil Thai Pongal Day",
+            "2026-02-01": "Navam Poya",
+            "2026-02-04": "National Day",
+            "2026-03-02": "Madin Poya",
+            "2026-04-01": "Bak Poya",
+            "2026-04-13": "Day prior to New Year",
+            "2026-04-14": "Sinhala & Tamil New Year",
+            "2026-05-01": "May Day / Vesak Poya",
+            "2026-05-02": "Day following Vesak Poya",
+            "2026-05-30": "Adhi Poson Poya",
+            "2026-06-29": "Poson Poya",
+            "2026-07-29": "Esala Poya",
+            "2026-08-26": "Milad-Un-Nabi",
+            "2026-08-27": "Nikini Poya",
+            "2026-09-26": "Binara Poya",
+            "2026-10-25": "Vap Poya",
+            "2026-11-08": "Deepavali",
+            "2026-11-24": "Il Poya",
+            "2026-12-23": "Unduvap Poya",
+            "2026-12-25": "Christmas Day",
 
+            // 2027 Holidays
+            "2027-01-15": "Tamil Thai Pongal Day",
+            "2027-01-22": "Duruthu Poya",
+            "2027-02-04": "National Day",
+            "2027-02-20": "Navam Poya",
+            "2027-03-06": "Mahasivarathri",
+            "2027-03-10": "Id-Ul-Fitr",
+            "2027-03-22": "Madin Poya",
+            "2027-03-26": "Good Friday",
+            "2027-04-13": "Day prior to New Year",
+            "2027-04-14": "Sinhala & Tamil New Year",
+            "2027-04-20": "Bak Poya",
+            "2027-05-01": "May Day",
+            "2027-05-17": "Id-Ul-Alha",
+            "2027-05-19": "Vesak Poya",
+            "2027-05-20": "Day following Vesak Poya",
+            "2027-06-18": "Poson Poya",
+            "2027-07-18": "Esala Poya",
+            "2027-08-15": "Milad-Un-Nabi",
+            "2027-08-16": "Nikini Poya",
+            "2027-09-15": "Binara Poya",
+            "2027-10-15": "Vap Poya",
+            "2027-10-28": "Deepavali",
+            "2027-11-13": "Il Poya",
+            "2027-12-13": "Unduvap Poya",
+            "2027-12-25": "Christmas Day"
+        };
+
+        // Application State
+        let activeDayNum = null;
+        let selectedStatus = 'absent';
+
+        // Helper: Format Currency
+        function formatCurrency(amount) {
+            return 'LKR ' + Math.round(amount).toLocaleString('en-US');
+        }
+
+        // Helper: Get Local Storage Key for Month
         function getStorageKey(monthStr) {
             return `babysitter_data_${monthStr}`;
         }
 
+        // Data Storage Handlers
         function loadMonthData(monthStr) {
-            const saved = localStorage.getItem(getStorageKey(monthStr));
-            return saved ? JSON.parse(saved) : {};
+            const raw = localStorage.getItem(getStorageKey(monthStr));
+            return raw ? JSON.parse(raw) : {};
         }
 
         function saveMonthData(monthStr, data) {
             localStorage.setItem(getStorageKey(monthStr), JSON.stringify(data));
         }
 
-        function renderTable() {
-            const monthVal = document.getElementById('monthSelect').value;
+        function getGlobalRate() {
+            const val = document.getElementById('globalDailyRate').value;
+            return parseFloat(val) || 1300;
+        }
+
+        function updateGlobalRate() {
+            document.getElementById('statDefaultRate').innerText = getGlobalRate().toLocaleString();
+            renderCalendar();
+        }
+
+        // Month Selection Handlers
+        function onMonthSelect() {
+            renderCalendar();
+        }
+
+        function changeMonth(delta) {
+            const picker = document.getElementById('monthPicker');
+            const [year, month] = picker.value.split('-').map(Number);
+            const date = new Date(year, month - 1 + delta, 1);
+            
+            const newYear = date.getFullYear();
+            const newMonth = String(date.getMonth() + 1).padStart(2, '0');
+            picker.value = `${newYear}-${newMonth}`;
+            renderCalendar();
+        }
+
+        // Main Calendar Render Engine
+        function renderCalendar() {
+            const monthVal = document.getElementById('monthPicker').value;
             const [year, month] = monthVal.split('-').map(Number);
+            
+            const firstDayIndex = new Date(year, month - 1, 1).getDay();
             const daysInMonth = new Date(year, month, 0).getDate();
-            const data = loadMonthData(monthVal);
+            const monthData = loadMonthData(monthVal);
+            const defaultRate = getGlobalRate();
 
-            const tbody = document.getElementById('attendanceBody');
-            tbody.innerHTML = '';
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
 
-            let totalWorkedDays = 0;
-            let totalEarned = 0;
-            let totalAdvance = 0;
+            let fullDaysCount = 0;
+            let halfDaysCount = 0;
+            let totalGrossEarned = 0;
+            let totalAdvances = 0;
 
+            // Render Empty Padding Cells for alignment
+            for (let i = 0; i < firstDayIndex; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'bg-slate-50/50 day-cell border-none';
+                grid.appendChild(emptyCell);
+            }
+
+            // Render Calendar Days
             for (let day = 1; day <= daysInMonth; day++) {
-                const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const dateObj = new Date(year, month - 1, day);
-                const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-                
-                const dayData = data[day] || {
+                const dayStr = String(day).padStart(2, '0');
+                const monthStr = String(month).padStart(2, '0');
+                const isoDateKey = `${year}-${monthStr}-${dayStr}`;
+                const holidayName = sriLankaHolidays[isoDateKey] || null;
+
+                const dayRecord = monthData[day] || {
                     status: 'absent',
                     inTime: '',
                     outTime: '',
-                    rate: DEFAULT_RATE,
+                    rate: defaultRate,
                     advance: 0,
                     remark: ''
                 };
 
-                // Calculations
-                let dayEarned = 0;
-                if (dayData.status === 'present') {
-                    dayEarned = Number(dayData.rate);
-                    totalWorkedDays += 1;
-                } else if (dayData.status === 'halfday') {
-                    dayEarned = Number(dayData.rate) / 2;
-                    totalWorkedDays += 0.5;
+                // Earnings Calculations
+                let dayEarnings = 0;
+                if (dayRecord.status === 'present') {
+                    fullDaysCount += 1;
+                    dayEarnings = parseFloat(dayRecord.rate) || defaultRate;
+                } else if (dayRecord.status === 'halfday') {
+                    halfDaysCount += 1;
+                    dayEarnings = (parseFloat(dayRecord.rate) || defaultRate) / 2;
                 }
 
-                totalEarned += dayEarned;
-                totalAdvance += Number(dayData.advance || 0);
+                const dayAdvance = parseFloat(dayRecord.advance) || 0;
+                totalGrossEarned += dayEarnings;
+                totalAdvances += dayAdvance;
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><strong>${day} (${dayName})</strong></td>
-                    <td>
-                        <select onchange="updateEntry(${day}, 'status', this.value)">
-                            <option value="absent" ${dayData.status === 'absent' ? 'selected' : ''}>Absent</option>
-                            <option value="present" ${dayData.status === 'present' ? 'selected' : ''}>Present</option>
-                            <option value="halfday" ${dayData.status === 'halfday' ? 'selected' : ''}>Half Day</option>
-                        </select>
-                    </td>
-                    <td><input type="time" value="${dayData.inTime}" onchange="updateEntry(${day}, 'inTime', this.value)"></td>
-                    <td><input type="time" value="${dayData.outTime}" onchange="updateEntry(${day}, 'outTime', this.value)"></td>
-                    <td><input type="number" value="${dayData.rate}" onchange="updateEntry(${day}, 'rate', this.value)"></td>
-                    <td><input type="number" value="${dayData.advance}" onchange="updateEntry(${day}, 'advance', this.value)"></td>
-                    <td><input type="text" placeholder="e.g. Late by 10m" value="${dayData.remark}" onchange="updateEntry(${day}, 'remark', this.value)"></td>
+                // Status Badge & Background Styling
+                let statusBadge = '';
+                let cellBg = 'bg-white';
+                
+                if (holidayName) {
+                    cellBg = 'bg-amber-100/60 hover:bg-amber-100'; // Soft pastel yellow for holidays
+                } else if (dayRecord.status === 'present') {
+                    cellBg = 'bg-emerald-50/40 hover:bg-emerald-50/70';
+                } else if (dayRecord.status === 'halfday') {
+                    cellBg = 'bg-amber-50/40 hover:bg-amber-50/70';
+                }
+
+                if (dayRecord.status === 'present') {
+                    statusBadge = `<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px] inline-flex items-center gap-0.5"><i class="fa-solid fa-check text-[9px]"></i> Present</span>`;
+                } else if (dayRecord.status === 'halfday') {
+                    statusBadge = `<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[10px] inline-flex items-center gap-0.5"><i class="fa-solid fa-clock-rotate-left text-[9px]"></i> Half</span>`;
+                } else {
+                    statusBadge = `<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 font-medium text-[10px]">Absent</span>`;
+                }
+
+                const cell = document.createElement('div');
+                cell.className = `${cellBg} p-2 day-cell flex flex-col justify-between cursor-pointer group transition-all`;
+                cell.onclick = () => openModal(day);
+
+                cell.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${dayRecord.status !== 'absent' ? 'bg-slate-800 text-white' : 'text-slate-700 bg-slate-100/80'}">${day}</span>
+                            ${statusBadge}
+                        </div>
+
+                        ${holidayName ? `
+                            <div class="my-1">
+                                <span class="text-[9px] font-bold text-amber-900 bg-amber-200/80 px-1.5 py-0.5 rounded inline-block truncate max-w-full" title="${holidayName}">
+                                    <i class="fa-solid fa-sun text-[8px] mr-0.5 text-amber-600"></i>${holidayName}
+                                </span>
+                            </div>
+                        ` : ''}
+                        
+                        ${dayRecord.status !== 'absent' ? `
+                            <div class="text-[10px] font-semibold text-slate-600 mt-0.5">
+                                ${dayRecord.inTime || dayRecord.outTime ? `<i class="fa-regular fa-clock text-[9px] text-slate-400 mr-0.5"></i>${dayRecord.inTime || '--:--'} - ${dayRecord.outTime || '--:--'}` : ''}
+                            </div>
+                        ` : ''}
+
+                        ${dayRecord.remark ? `
+                            <p class="text-[9px] text-slate-500 italic truncate mt-0.5 bg-slate-100/80 px-1 py-0.5 rounded">
+                                ${dayRecord.remark}
+                            </p>
+                        ` : ''}
+                    </div>
+
+                    <div class="mt-1 pt-1 border-t border-slate-200/50 flex items-center justify-between text-[10px]">
+                        <span class="font-bold text-slate-700">${dayEarnings > 0 ? 'LKR ' + dayEarnings.toLocaleString() : ''}</span>
+                        ${dayAdvance > 0 ? `<span class="font-bold text-rose-600 bg-rose-50 px-1 rounded">Adv: ${dayAdvance}</span>` : ''}
+                    </div>
                 `;
-                tbody.appendChild(tr);
+
+                grid.appendChild(cell);
             }
 
-            // Update stats
-            document.getElementById('statDays').innerText = `${totalWorkedDays} Days`;
-            document.getElementById('statTotal').innerText = `Rs. ${totalEarned.toLocaleString()}`;
-            document.getElementById('statAdvance').innerText = `Rs. ${totalAdvance.toLocaleString()}`;
-            document.getElementById('statBalance').innerText = `Rs. ${(totalEarned - totalAdvance).toLocaleString()}`;
+            // Update Summary Cards
+            const totalWorkedDays = fullDaysCount + (halfDaysCount * 0.5);
+            const netBalance = totalGrossEarned - totalAdvances;
+
+            document.getElementById('statWorkedDays').innerText = `${totalWorkedDays} Days`;
+            document.getElementById('statWorkedSub').innerText = `${fullDaysCount} Full | ${halfDaysCount} Half Days`;
+            document.getElementById('statGrossSalary').innerText = formatCurrency(totalGrossEarned);
+            document.getElementById('statTotalAdvance').innerText = formatCurrency(totalAdvances);
+            document.getElementById('statNetBalance').innerText = formatCurrency(netBalance);
+
+            // Update 50/50 Split Calculation for Malith & Shyamini
+            const halfShare = netBalance > 0 ? netBalance / 2 : 0;
+            document.getElementById('splitTotalBalance').innerText = formatCurrency(netBalance);
+            document.getElementById('malithAmount').innerText = formatCurrency(halfShare);
+            document.getElementById('shyaminiAmount').innerText = formatCurrency(halfShare);
         }
 
-        function updateEntry(day, field, value) {
-            const monthVal = document.getElementById('monthSelect').value;
-            const data = loadMonthData(monthVal);
+        function openModal(day) {
+            activeDayNum = day;
+            const monthVal = document.getElementById('monthPicker').value;
+            const [year, month] = monthVal.split('-').map(Number);
+            const monthData = loadMonthData(monthVal);
+            const defaultRate = getGlobalRate();
+
+            const record = monthData[day] || {
+                status: 'absent',
+                inTime: '08:30',
+                outTime: '17:00',
+                rate: defaultRate,
+                advance: 0,
+                remark: ''
+            };
+
+            const dayStr = String(day).padStart(2, '0');
+            const monthStr = String(month).padStart(2, '0');
+            const isoDateKey = `${year}-${monthStr}-${dayStr}`;
+            const holidayName = sriLankaHolidays[isoDateKey] || null;
+
+            // Set Holiday Banner
+            const banner = document.getElementById('holidayBanner');
+            const bannerText = document.getElementById('holidayBannerText');
+            if (holidayName) {
+                bannerText.innerText = `Sri Lankan Holiday: ${holidayName}`;
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+
+            // Set Modal Header
+            const dateObj = new Date(year, month - 1, day);
+            const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+            const monthName = dateObj.toLocaleDateString('en-US', { month: 'long' });
             
-            if (!data[day]) {
-                data[day] = { status: 'absent', inTime: '', outTime: '', rate: DEFAULT_RATE, advance: 0, remark: '' };
-            }
+            document.getElementById('modalDateTitle').innerText = `${monthName} ${day}, ${year}`;
+            document.getElementById('modalDateSubtitle').innerText = `${dayName} - Update sitter attendance details`;
 
-            data[day][field] = value;
-            saveMonthData(monthVal, data);
-            renderTable();
+            // Populate Form Fields
+            setModalStatus(record.status || 'absent');
+            document.getElementById('modalInTime').value = record.inTime || '08:30';
+            document.getElementById('modalOutTime').value = record.outTime || '17:00';
+            document.getElementById('modalRate').value = record.rate || defaultRate;
+            document.getElementById('modalAdvance').value = record.advance || '';
+            document.getElementById('modalRemark').value = record.remark || '';
+
+            // Show Modal with Animation
+            const modal = document.getElementById('dayModal');
+            const card = document.getElementById('dayModalCard');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                card.classList.remove('scale-95', 'opacity-0');
+                card.classList.add('scale-100', 'opacity-100');
+            }, 10);
         }
 
+        function closeModal() {
+            const modal = document.getElementById('dayModal');
+            const card = document.getElementById('dayModalCard');
+            card.classList.remove('scale-100', 'opacity-100');
+            card.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        function setModalStatus(status) {
+            selectedStatus = status;
+            
+            const btnPresent = document.getElementById('btnStatusPresent');
+            const btnHalf = document.getElementById('btnStatusHalf');
+            const btnAbsent = document.getElementById('btnStatusAbsent');
+
+            btnPresent.className = 'py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 transition border-slate-200 text-slate-600 bg-white hover:bg-slate-50';
+            btnHalf.className = 'py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 transition border-slate-200 text-slate-600 bg-white hover:bg-slate-50';
+            btnAbsent.className = 'py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 transition border-slate-200 text-slate-600 bg-white hover:bg-slate-50';
+
+            if (status === 'present') {
+                btnPresent.className = 'py-2.5 rounded-xl border font-bold text-xs flex flex-col items-center gap-1 transition border-emerald-500 bg-emerald-500 text-white shadow-md shadow-emerald-500/20';
+            } else if (status === 'halfday') {
+                btnHalf.className = 'py-2.5 rounded-xl border font-bold text-xs flex flex-col items-center gap-1 transition border-amber-500 bg-amber-500 text-white shadow-md shadow-amber-500/20';
+            } else {
+                btnAbsent.className = 'py-2.5 rounded-xl border font-bold text-xs flex flex-col items-center gap-1 transition border-slate-600 bg-slate-700 text-white shadow-md shadow-slate-700/20';
+            }
+        }
+
+        function saveDayDetails() {
+            if (!activeDayNum) return;
+
+            const monthVal = document.getElementById('monthPicker').value;
+            const monthData = loadMonthData(monthVal);
+
+            monthData[activeDayNum] = {
+                status: selectedStatus,
+                inTime: document.getElementById('modalInTime').value,
+                outTime: document.getElementById('modalOutTime').value,
+                rate: parseFloat(document.getElementById('modalRate').value) || getGlobalRate(),
+                advance: parseFloat(document.getElementById('modalAdvance').value) || 0,
+                remark: document.getElementById('modalRemark').value.trim()
+            };
+
+            saveMonthData(monthVal, monthData);
+            closeModal();
+            renderCalendar();
+        }
+
+        // CSV Export Engine
         function exportCSV() {
-            const monthVal = document.getElementById('monthSelect').value;
-            const data = loadMonthData(monthVal);
+            const monthVal = document.getElementById('monthPicker').value;
+            const monthData = loadMonthData(monthVal);
             const [year, month] = monthVal.split('-').map(Number);
             const daysInMonth = new Date(year, month, 0).getDate();
+            const defaultRate = getGlobalRate();
 
-            let csvContent = "data:text/csv;charset=utf-8,Date,Status,In Time,Out Time,Rate,Advance,Remark\n";
+            let csvRows = ['Date,Day,Holiday,Status,In Time,Out Time,Rate (LKR),Advance (LKR),Earned (LKR),Remark'];
 
             for (let day = 1; day <= daysInMonth; day++) {
-                const dayData = data[day] || { status: 'absent', inTime: '', outTime: '', rate: DEFAULT_RATE, advance: 0, remark: '' };
-                const row = [`${year}-${month}-${day}`, dayData.status, dayData.inTime, dayData.outTime, dayData.rate, dayData.advance, `"${dayData.remark}"`].join(",");
-                csvContent += row + "\n";
+                const dateObj = new Date(year, month - 1, day);
+                const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                const dayStr = String(day).padStart(2, '0');
+                const monthStr = String(month).padStart(2, '0');
+                const isoDateKey = `${year}-${monthStr}-${dayStr}`;
+                const holidayName = sriLankaHolidays[isoDateKey] || '';
+
+                const rec = monthData[day] || { status: 'absent', inTime: '', outTime: '', rate: defaultRate, advance: 0, remark: '' };
+
+                let earned = 0;
+                if (rec.status === 'present') earned = rec.rate || defaultRate;
+                if (rec.status === 'halfday') earned = (rec.rate || defaultRate) / 2;
+
+                const row = [
+                    `${isoDateKey}`,
+                    dayName,
+                    `"${holidayName}"`,
+                    rec.status,
+                    rec.inTime || '',
+                    rec.outTime || '',
+                    rec.rate || defaultRate,
+                    rec.advance || 0,
+                    earned,
+                    `"${(rec.remark || '').replace(/"/g, '""')}"`
+                ];
+                csvRows.push(row.join(','));
             }
 
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `BabySitter_Attendance_${monthVal}.csv`);
+            const csvString = csvRows.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `BabySitter_Attendance_${monthVal}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
-        // Initial Load
-        renderTable();
+        // Initialize App on Window Load
+        window.onload = function() {
+            renderCalendar();
+        };
     </script>
 </body>
 </html>
