@@ -127,8 +127,8 @@
   <script>
     const FIREBASE_DB_URL = "https://babysitter-tracker-7ce0e-default-rtdb.firebaseio.com/";
     const PARENTS = {
-      malith: { name: "Malith", phone: "+94787365590" },
-      shyamini: { name: "Shyamini", phone: "+94769192553" }
+      malith: { name: "Malith", phone: "94787365590" },
+      shyamini: { name: "Shyamini", phone: "94769192553" }
     };
     const SITTER_NUMBERS = ["94789495469", "94772308654"];
     let activeParent = "malith";
@@ -212,23 +212,34 @@
 
         if (holidayName) {
           bgClass = "bg-holiday border-yellow-300";
-          statusText = `<span class="text-[10px] font-bold block text-yellow-800">${holidayName}</span>`;
+          statusText = `<span class="text-[10px] font-bold block text-yellow-800 mb-1">${holidayName}</span>`;
         }
 
         if (dayRecord.status === "requested") {
           bgClass = "bg-leave border-red-300";
           pendingLeaves++;
-          statusText += `<button onclick="approveLeave('${dateKey}')" class="mt-1 text-[10px] bg-red-600 text-white px-2 py-0.5 rounded shadow">Approve</button>`;
+          statusText += `
+            <span class="text-[10px] text-red-700 font-bold block mb-1">Leave Req.</span>
+            <button onclick="updateDayStatus('${dateKey}', 'approved', true)" class="w-full text-[10px] bg-red-600 text-white px-2 py-0.5 rounded shadow">Approve</button>
+          `;
         } else if (dayRecord.status === "approved" || dayRecord.status === "present") {
           bgClass = "bg-approved border-green-300";
           workedDays++;
-          statusText += `<span class="text-[10px] text-green-800 font-bold block">Approved</span>`;
+          statusText += `
+            <span class="text-[10px] text-green-800 font-bold block mb-1">Present</span>
+            <button onclick="updateDayStatus('${dateKey}', null, false)" class="w-full text-[10px] bg-white text-green-800 border border-green-300 hover:bg-green-50 px-2 py-0.5 rounded shadow mt-1">Undo</button>
+          `;
+        } else {
+          // Empty day -> allow admin to mark present
+          statusText += `
+            <button onclick="updateDayStatus('${dateKey}', 'present', false)" class="w-full mt-1 text-[10px] bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-2 py-0.5 rounded shadow">Mark Present</button>
+          `;
         }
 
         container.innerHTML += `
-          <div class="p-2 min-h-[70px] border rounded-lg flex flex-col justify-between ${bgClass}">
-            <div class="text-left font-bold text-xs">${d}</div>
-            <div>${statusText}</div>
+          <div class="p-2 min-h-[75px] border rounded-lg flex flex-col justify-between ${bgClass}">
+            <div class="text-left font-bold text-xs text-gray-700">${d}</div>
+            <div class="mt-1">${statusText}</div>
           </div>
         `;
       }
@@ -239,21 +250,33 @@
       document.getElementById("statPendingLeaves").innerText = pendingLeaves;
     }
 
-    async function approveLeave(dateKey) {
+    async function updateDayStatus(dateKey, status, notifySitter) {
       const monthStr = dateKey.slice(0, 7);
-      await fetch(`${FIREBASE_DB_URL}records/${monthStr}/${dateKey}.json`, {
-        method: "PATCH",
-        body: JSON.stringify({ status: "approved" })
-      });
+      
+      if (status === null) {
+        // Undo / Remove record
+        await fetch(`${FIREBASE_DB_URL}records/${monthStr}/${dateKey}.json`, {
+          method: "DELETE"
+        });
+      } else {
+        // Add Present or Approve Leave
+        await fetch(`${FIREBASE_DB_URL}records/${monthStr}/${dateKey}.json`, {
+          method: "PATCH",
+          body: JSON.stringify({ status: status })
+        });
 
-      // Notify Sitter via WhatsApp
-      const msg = encodeURIComponent(`Hello, Your leave request for ${dateKey} has been APPROVED by ${PARENTS[activeParent].name}.`);
-      SITTER_NUMBERS.forEach((phone, idx) => {
-        setTimeout(() => {
-          window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${msg}`, '_blank');
-        }, idx * 1000);
-      });
+        // Send WhatsApp only if approving a requested leave
+        if (notifySitter) {
+          const msg = encodeURIComponent(`Hello, Your leave request for ${dateKey} has been APPROVED by ${PARENTS[activeParent].name}.`);
+          SITTER_NUMBERS.forEach((phone, idx) => {
+            setTimeout(() => {
+              window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${msg}`, '_blank');
+            }, idx * 1000);
+          });
+        }
+      }
 
+      // Refresh Data
       loadAdminData();
     }
 
