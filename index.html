@@ -3,728 +3,609 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baby Sitter Attendance & Salary Tracker</title>
-    <!-- Google Fonts & Font Awesome Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#f0f3ff',
-                            100: '#e0e7ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                        },
-                        holiday: {
-                            50: '#fefce8',
-                            100: '#fef9c3',
-                            200: '#fef08a',
-                            300: '#fde047',
-                            800: '#854d0e',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <title>Baby Sitter Tracker - Malith & Shyamini</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #f8fafc;
-            color: #1e293b;
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --pastel-yellow: #fef08a;
+            --pastel-yellow-light: #fef9c3;
+            --border: #e2e8f0;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 16px;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
+            color: var(--text-main);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .user-badge {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #bae6fd;
+        }
+
+        .btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .stat-card .label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .value {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .split-card {
+            background: #1e293b;
+            color: white;
+            padding: 16px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .split-box {
+            display: flex;
+            gap: 20px;
+        }
+
+        .split-item {
+            text-align: right;
+        }
+
+        .split-item span {
+            display: block;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .split-item strong {
+            font-size: 1.2rem;
+            color: #38bdf8;
+        }
+
+        .month-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
         .calendar-grid {
             display: grid;
-            grid-template-columns: repeat(7, minmax(0, 1fr));
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
         }
-        .day-cell {
-            min-height: 115px;
-            transition: all 0.2s ease-in-out;
+
+        .day-header {
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 4px 0;
         }
-        .day-cell:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+        .calendar-day {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-height: 95px;
+            padding: 6px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.1s;
         }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+
+        .calendar-day:active {
+            transform: scale(0.98);
         }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
+
+        .calendar-day.empty {
+            background: transparent;
+            border: none;
+            cursor: default;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 9999px;
+
+        .calendar-day.holiday {
+            background-color: var(--pastel-yellow-light);
+            border-color: #fde047;
+        }
+
+        .day-number {
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .holiday-tag {
+            background: var(--pastel-yellow);
+            color: #854d0e;
+            font-size: 0.65rem;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 70px;
+        }
+
+        .status-pill {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 3px 6px;
+            border-radius: 4px;
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        .pill-present { background: var(--success-light); color: var(--success); }
+        .pill-absent { background: var(--danger-light); color: var(--danger); }
+        .pill-halfday { background: var(--warning-light); color: var(--warning); }
+
+        .time-info {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .editor-by {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+            font-style: italic;
+        }
+
+        /* Modal Popup */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-muted);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            .calendar-grid { gap: 4px; }
+            .calendar-day { min-height: 80px; padding: 4px; }
+            .holiday-tag { display: none; }
+            .time-info { display: none; }
         }
     </style>
 </head>
-<body class="min-h-screen pb-12">
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-brand-500/20">
-                    <i class="fa-solid fa-baby-carriage"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold text-slate-800 tracking-tight">Baby Sitter Attendance & Salary Tracker</h1>
-                    <p class="text-xs text-slate-500 font-medium">Daily attendance, timings, holidays & automatic 50/50 payment split</p>
-                </div>
-            </div>
+<body>
 
-            <!-- Month Selector & Global Actions -->
-            <div class="flex flex-wrap items-center gap-3">
-                <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-                    <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white hover:shadow-xs transition" title="Previous Month">
-                        <i class="fa-solid fa-chevron-left text-xs"></i>
-                    </button>
-                    <input type="month" id="monthPicker" value="2026-09" onchange="onMonthSelect()" class="bg-transparent font-bold text-slate-700 text-sm px-3 focus:outline-none cursor-pointer">
-                    <button onclick="changeMonth(1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white hover:shadow-xs transition" title="Next Month">
-                        <i class="fa-solid fa-chevron-right text-xs"></i>
-                    </button>
-                </div>
-
-                <button onclick="exportCSV()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xs transition">
-                    <i class="fa-solid fa-file-csv text-sm"></i>
-                    <span>Export CSV</span>
-                </button>
-            </div>
+    <div class="header">
+        <div>
+            <h1>Baby Sitter Tracker</h1>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Daily Attendance & Salary Management</p>
         </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
-
-        <!-- Top Summary Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Total Worked Days Card -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Worked Days</p>
-                    <h3 id="statWorkedDays" class="text-2xl font-extrabold text-slate-800">0 Days</h3>
-                    <p id="statWorkedSub" class="text-xs text-slate-500 mt-1">0 Full | 0 Half</p>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg font-bold">
-                    <i class="fa-solid fa-calendar-check"></i>
-                </div>
-            </div>
-
-            <!-- Total Gross Salary Card -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Total Earned</p>
-                    <h3 id="statGrossSalary" class="text-2xl font-extrabold text-brand-600">LKR 0</h3>
-                    <p class="text-xs text-slate-500 mt-1">Rate @ LKR <span id="statDefaultRate">1,300</span>/day</p>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-lg font-bold">
-                    <i class="fa-solid fa-wallet"></i>
-                </div>
-            </div>
-
-            <!-- Total Advance Card -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Total Advances</p>
-                    <h3 id="statTotalAdvance" class="text-2xl font-extrabold text-rose-500">LKR 0</h3>
-                    <p class="text-xs text-slate-500 mt-1">Advances / Partials taken</p>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center text-lg font-bold">
-                    <i class="fa-solid fa-hand-holding-dollar"></i>
-                </div>
-            </div>
-
-            <!-- Net Balance Payable Card -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Net Balance Payable</p>
-                    <h3 id="statNetBalance" class="text-2xl font-extrabold text-emerald-600">LKR 0</h3>
-                    <p class="text-xs text-emerald-600/80 font-medium mt-1">Earned minus advances</p>
-                </div>
-                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold">
-                    <i class="fa-solid fa-money-bill-wave"></i>
-                </div>
-            </div>
+        <div class="header-controls">
+            <span class="user-badge" id="currentUserBadge" onclick="changeUser()">👤 Device: Setting up...</span>
+            <button class="btn" onclick="openLogModal()">📋 Activity Log</button>
         </div>
+    </div>
 
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <i class="fa-solid fa-sliders text-brand-600 text-lg"></i>
-                <div class="flex items-center gap-2">
-                    <span class="text-sm font-semibold text-slate-700">Standard Daily Rate (LKR):</span>
-                    <input type="number" id="globalDailyRate" value="1300" onchange="updateGlobalRate()" class="w-28 px-3 py-1.5 border border-slate-300 rounded-lg text-sm font-bold text-slate-800 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                </div>
-            </div>
-            
-            <div class="flex flex-wrap items-center gap-4 text-xs font-semibold">
-                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Present</div>
-                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Half Day</div>
-                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-slate-300 inline-block"></span> Absent</div>
-                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-300 border border-amber-400 inline-block"></span> Holiday / Poya</div>
-            </div>
+    <div class="month-header">
+        <h2 id="currentMonthYear" style="font-size: 1.1rem;">September 2026</h2>
+        <input type="month" id="monthPicker" value="2026-09" onchange="renderCalendar()" style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border);">
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="label">Days Worked</div>
+            <div class="value" id="statDays">0 Days</div>
         </div>
-
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <!-- Day Names Header -->
-            <div class="calendar-grid bg-slate-100/80 border-b border-slate-200 text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-3">
-                <div>Sun</div>
-                <div>Mon</div>
-                <div>Tue</div>
-                <div>Wed</div>
-                <div>Thu</div>
-                <div>Fri</div>
-                <div>Sat</div>
-            </div>
-
-            <!-- Calendar Days Grid -->
-            <div id="calendarGrid" class="calendar-grid bg-slate-200 gap-px">
-                <!-- Dynamic Day Cells Generated via JS -->
-            </div>
+        <div class="stat-card">
+            <div class="label">Total Earned</div>
+            <div class="value" style="color: var(--primary);" id="statTotal">Rs. 0</div>
         </div>
-
-        <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 relative overflow-hidden">
-            <!-- Background Decorative Blur Circle -->
-            <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-800">
-                <div>
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 text-xs font-semibold mb-2">
-                        <i class="fa-solid fa-scale-balanced"></i> Auto 50/50 Equal Split
-                    </div>
-                    <h2 class="text-2xl font-bold tracking-tight">Monthly Payment Split</h2>
-                    <p class="text-xs text-slate-400 mt-1">Automated equal share contribution of remaining net balance payable</p>
-                </div>
-                
-                <div class="bg-slate-800/80 backdrop-blur-md px-6 py-3 rounded-2xl border border-slate-700/60 flex items-center gap-4">
-                    <span class="text-xs text-slate-400 font-medium">Total Net Payable:</span>
-                    <span id="splitTotalBalance" class="text-2xl font-extrabold text-emerald-400">LKR 0</span>
-                </div>
-            </div>
-
-            <!-- Split Share Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                <!-- Malith's Share -->
-                <div class="bg-slate-800/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/60 hover:border-brand-500/50 transition">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg font-bold">
-                                <i class="fa-solid fa-user-tie"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-slate-100">Malith's Share</h4>
-                                <p class="text-xs text-slate-400">50% Contribution</p>
-                            </div>
-                        </div>
-                        <span class="text-xs font-semibold bg-blue-500/20 text-blue-300 px-2.5 py-1 rounded-lg">Half Share</span>
-                    </div>
-                    <div class="text-3xl font-extrabold text-white tracking-tight" id="malithAmount">
-                        LKR 0
-                    </div>
-                    <p class="text-xs text-slate-400 mt-2">Amount to pay to Baby Sitter</p>
-                </div>
-
-                <!-- Shyamini's Share -->
-                <div class="bg-slate-800/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/60 hover:border-purple-500/50 transition">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-lg font-bold">
-                                <i class="fa-solid fa-user-nurse"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-slate-100">Shyamini's Share</h4>
-                                <p class="text-xs text-slate-400">50% Contribution</p>
-                            </div>
-                        </div>
-                        <span class="text-xs font-semibold bg-purple-500/20 text-purple-300 px-2.5 py-1 rounded-lg">Half Share</span>
-                    </div>
-                    <div class="text-3xl font-extrabold text-white tracking-tight" id="shyaminiAmount">
-                        LKR 0
-                    </div>
-                    <p class="text-xs text-slate-400 mt-2">Amount to pay to Baby Sitter</p>
-                </div>
-            </div>
+        <div class="stat-card">
+            <div class="label">Total Advance</div>
+            <div class="value" style="color: var(--danger);" id="statAdvance">Rs. 0</div>
         </div>
+        <div class="stat-card">
+            <div class="label">Balance Payable</div>
+            <div class="value" style="color: var(--success);" id="statBalance">Rs. 0</div>
+        </div>
+    </div>
 
-    </main>
-
-    <div id="dayModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 transition-all scale-95 opacity-0" id="dayModalCard">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
-                <div>
-                    <h3 id="modalDateTitle" class="text-lg font-bold text-slate-800">Edit Day Details</h3>
-                    <p id="modalDateSubtitle" class="text-xs text-slate-500">Update work status, time slots, rate & advance</p>
-                </div>
-                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+    <!-- 50/50 Payment Split Section -->
+    <div class="split-card">
+        <div>
+            <strong style="font-size: 0.95rem;">50 / 50 Payout Split</strong>
+            <p style="font-size: 0.75rem; color: #94a3b8;">Half-and-half contribution breakdown</p>
+        </div>
+        <div class="split-box">
+            <div class="split-item">
+                <span>MALITH</span>
+                <strong id="splitMalith">Rs. 0</strong>
             </div>
-
-            <div id="holidayBanner" class="hidden mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium flex items-center gap-2">
-                <i class="fa-solid fa-sun text-amber-500 text-sm"></i>
-                <span id="holidayBannerText">Holiday</span>
-            </div>
-
-            <div class="space-y-4">
-                <!-- Status Select Buttons -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Attendance Status</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button type="button" onclick="setModalStatus('present')" id="btnStatusPresent" class="py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 transition">
-                            <i class="fa-solid fa-check text-sm"></i> Present
-                        </button>
-                        <button type="button" onclick="setModalStatus('halfday')" id="btnStatusHalf" class="py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 transition">
-                            <i class="fa-solid fa-clock-rotate-left text-sm"></i> Half Day
-                        </button>
-                        <button type="button" onclick="setModalStatus('absent')" id="btnStatusAbsent" class="py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 transition">
-                            <i class="fa-solid fa-xmark text-sm"></i> Absent
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Timing Inputs -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">In Time</label>
-                        <input type="time" id="modalInTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Out Time</label>
-                        <input type="time" id="modalOutTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                    </div>
-                </div>
-
-                <!-- Financial Inputs -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Daily Rate (LKR)</label>
-                        <input type="number" id="modalRate" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Advance Given (LKR)</label>
-                        <input type="number" id="modalAdvance" placeholder="0" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-rose-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                    </div>
-                </div>
-
-                <!-- Remark / Note -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Remarks / Note</label>
-                    <input type="text" id="modalRemark" placeholder="e.g. Came 20 mins late, brought extra baby milk powder" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex items-center justify-end gap-3 mt-8 pt-4 border-t border-slate-100">
-                <button onclick="closeModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">Cancel</button>
-                <button onclick="saveDayDetails()" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-500/20 transition">Save Changes</button>
+            <div class="split-item">
+                <span>SHYAMINI</span>
+                <strong id="splitShyamini">Rs. 0</strong>
             </div>
         </div>
     </div>
 
-    <script>
-        // Sri Lankan Poya & Major Public/Bank/Mercantile Holidays (2026 & 2027)
-        const sriLankaHolidays = {
-            // 2026 Holidays
-            "2026-01-03": "Duruthu Poya",
-            "2026-01-15": "Tamil Thai Pongal Day",
-            "2026-02-01": "Navam Poya",
-            "2026-02-04": "National Day",
-            "2026-03-02": "Madin Poya",
-            "2026-04-01": "Bak Poya",
-            "2026-04-13": "Day prior to New Year",
-            "2026-04-14": "Sinhala & Tamil New Year",
-            "2026-05-01": "May Day / Vesak Poya",
-            "2026-05-02": "Day following Vesak Poya",
-            "2026-05-30": "Adhi Poson Poya",
-            "2026-06-29": "Poson Poya",
-            "2026-07-29": "Esala Poya",
-            "2026-08-26": "Milad-Un-Nabi",
-            "2026-08-27": "Nikini Poya",
-            "2026-09-26": "Binara Poya",
-            "2026-10-25": "Vap Poya",
-            "2026-11-08": "Deepavali",
-            "2026-11-24": "Il Poya",
-            "2026-12-23": "Unduvap Poya",
-            "2026-12-25": "Christmas Day",
+    <!-- Calendar View -->
+    <div class="calendar-grid">
+        <div class="day-header">Sun</div>
+        <div class="day-header">Mon</div>
+        <div class="day-header">Tue</div>
+        <div class="day-header">Wed</div>
+        <div class="day-header">Thu</div>
+        <div class="day-header">Fri</div>
+        <div class="day-header">Sat</div>
+    </div>
+    <div class="calendar-grid" id="calendarDays"></div>
 
-            // 2027 Holidays
-            "2027-01-15": "Tamil Thai Pongal Day",
-            "2027-01-22": "Duruthu Poya",
-            "2027-02-04": "National Day",
-            "2027-02-20": "Navam Poya",
-            "2027-03-06": "Mahasivarathri",
-            "2027-03-10": "Id-Ul-Fitr",
-            "2027-03-22": "Madin Poya",
-            "2027-03-26": "Good Friday",
-            "2027-04-13": "Day prior to New Year",
-            "2027-04-14": "Sinhala & Tamil New Year",
-            "2027-04-20": "Bak Poya",
-            "2027-05-01": "May Day",
-            "2027-05-17": "Id-Ul-Alha",
-            "2027-05-19": "Vesak Poya",
-            "2027-05-20": "Day following Vesak Poya",
-            "2027-06-18": "Poson Poya",
-            "2027-07-18": "Esala Poya",
-            "2027-08-15": "Milad-Un-Nabi",
-            "2027-08-16": "Nikini Poya",
-            "2027-09-15": "Binara Poya",
-            "2027-10-15": "Vap Poya",
-            "2027-10-28": "Deepavali",
-            "2027-11-13": "Il Poya",
-            "2027-12-13": "Unduvap Poya",
-            "2027-12-25": "Christmas Day"
+    <!-- Day Edit Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalDateTitle">Edit Day</h3>
+                <span onclick="closeModal()" style="cursor: pointer; font-size: 1.2rem;">&times;</span>
+            </div>
+            <input type="hidden" id="modalDay">
+            <div class="form-group">
+                <label>Attendance Status</label>
+                <select id="modalStatus">
+                    <option value="absent">Absent</option>
+                    <option value="present">Present</option>
+                    <option value="halfday">Half Day</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>In Time</label>
+                    <input type="time" id="modalInTime">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Out Time</label>
+                    <input type="time" id="modalOutTime">
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Daily Rate (LKR)</label>
+                    <input type="number" id="modalRate" value="1300">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Advance Given</label>
+                    <input type="number" id="modalAdvance" value="0">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Remark / Notes</label>
+                <input type="text" id="modalRemark" placeholder="e.g. Late by 15 mins">
+            </div>
+            <button class="btn btn-primary" style="width: 100%; margin-top: 8px;" onclick="saveDayEntry()">Save Entry</button>
+        </div>
+    </div>
+
+    <!-- User Registration Modal -->
+    <div class="modal" id="userModal">
+        <div class="modal-content">
+            <h3>Device Registration</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">Who is using this phone/device?</p>
+            <button class="btn btn-primary" style="width: 100%; margin-bottom: 8px;" onclick="registerDevice('Malith')">Malith's Device</button>
+            <button class="btn" style="width: 100%; background: #0284c7; color: white;" onclick="registerDevice('Shyamini')">Shyamini's Device</button>
+        </div>
+    </div>
+
+    <!-- Activity Log Modal -->
+    <div class="modal" id="logModal">
+        <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3>Activity Log</h3>
+                <span onclick="document.getElementById('logModal').style.display='none'" style="cursor: pointer;">&times;</span>
+            </div>
+            <div id="logContent" style="font-size: 0.8rem; color: var(--text-main);"></div>
+        </div>
+    </div>
+
+    <script>
+        const DEFAULT_RATE = 1300;
+        let currentUser = localStorage.getItem('babysitter_device_user') || '';
+
+        // Holidays List (SL Holidays 2026)
+        const holidays2026 = {
+            "2026-09-25": "Binara Poya",
+            "2026-10-24": "Vap Poya",
+            "2026-11-23": "Il Poya",
+            "2026-12-23": "Unduvap Poya"
         };
 
-        // Application State
-        let activeDayNum = null;
-        let selectedStatus = 'absent';
-
-        // Helper: Format Currency
-        function formatCurrency(amount) {
-            return 'LKR ' + Math.round(amount).toLocaleString('en-US');
+        function checkDeviceUser() {
+            if (!currentUser) {
+                document.getElementById('userModal').style.display = 'flex';
+            } else {
+                document.getElementById('currentUserBadge').innerText = `👤 Device: ${currentUser}`;
+            }
         }
 
-        // Helper: Get Local Storage Key for Month
+        function registerDevice(name) {
+            currentUser = name;
+            localStorage.setItem('babysitter_device_user', name);
+            document.getElementById('currentUserBadge').innerText = `👤 Device: ${currentUser}`;
+            document.getElementById('userModal').style.display = 'none';
+        }
+
+        function changeUser() {
+            document.getElementById('userModal').style.display = 'flex';
+        }
+
         function getStorageKey(monthStr) {
             return `babysitter_data_${monthStr}`;
         }
 
-        // Data Storage Handlers
         function loadMonthData(monthStr) {
-            const raw = localStorage.getItem(getStorageKey(monthStr));
-            return raw ? JSON.parse(raw) : {};
+            const saved = localStorage.getItem(getStorageKey(monthStr));
+            return saved ? JSON.parse(saved) : {};
         }
 
-        function saveMonthData(monthStr, data) {
-            localStorage.setItem(getStorageKey(monthStr), JSON.stringify(data));
+        function logActivity(message) {
+            const logs = JSON.parse(localStorage.getItem('babysitter_logs') || '[]');
+            const timestamp = new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' });
+            logs.unshift(`[${timestamp}] <strong>${currentUser}</strong>: ${message}`);
+            localStorage.setItem('babysitter_logs', JSON.stringify(logs.slice(0, 50)));
         }
 
-        function getGlobalRate() {
-            const val = document.getElementById('globalDailyRate').value;
-            return parseFloat(val) || 1300;
-        }
-
-        function updateGlobalRate() {
-            document.getElementById('statDefaultRate').innerText = getGlobalRate().toLocaleString();
-            renderCalendar();
-        }
-
-        // Month Selection Handlers
-        function onMonthSelect() {
-            renderCalendar();
-        }
-
-        function changeMonth(delta) {
-            const picker = document.getElementById('monthPicker');
-            const [year, month] = picker.value.split('-').map(Number);
-            const date = new Date(year, month - 1 + delta, 1);
-            
-            const newYear = date.getFullYear();
-            const newMonth = String(date.getMonth() + 1).padStart(2, '0');
-            picker.value = `${newYear}-${newMonth}`;
-            renderCalendar();
-        }
-
-        // Main Calendar Render Engine
         function renderCalendar() {
             const monthVal = document.getElementById('monthPicker').value;
             const [year, month] = monthVal.split('-').map(Number);
             
-            const firstDayIndex = new Date(year, month - 1, 1).getDay();
-            const daysInMonth = new Date(year, month, 0).getDate();
-            const monthData = loadMonthData(monthVal);
-            const defaultRate = getGlobalRate();
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            document.getElementById('currentMonthYear').innerText = `${monthNames[month - 1]} ${year}`;
 
-            const grid = document.getElementById('calendarGrid');
+            const firstDay = new Date(year, month - 1, 1).getDay();
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const data = loadMonthData(monthVal);
+
+            const grid = document.getElementById('calendarDays');
             grid.innerHTML = '';
 
-            let fullDaysCount = 0;
-            let halfDaysCount = 0;
-            let totalGrossEarned = 0;
-            let totalAdvances = 0;
+            let totalWorkedDays = 0;
+            let totalEarned = 0;
+            let totalAdvance = 0;
 
-            // Render Empty Padding Cells for alignment
-            for (let i = 0; i < firstDayIndex; i++) {
+            // Blank Days
+            for (let i = 0; i < firstDay; i++) {
                 const emptyCell = document.createElement('div');
-                emptyCell.className = 'bg-slate-50/50 day-cell border-none';
+                emptyCell.className = 'calendar-day empty';
                 grid.appendChild(emptyCell);
             }
 
-            // Render Calendar Days
+            // Month Days
             for (let day = 1; day <= daysInMonth; day++) {
-                const dayStr = String(day).padStart(2, '0');
-                const monthStr = String(month).padStart(2, '0');
-                const isoDateKey = `${year}-${monthStr}-${dayStr}`;
-                const holidayName = sriLankaHolidays[isoDateKey] || null;
+                const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isHoliday = holidays2026[dateKey];
+                const dayData = data[day] || { status: 'absent', inTime: '', outTime: '', rate: DEFAULT_RATE, advance: 0, remark: '', editedBy: '' };
 
-                const dayRecord = monthData[day] || {
-                    status: 'absent',
-                    inTime: '',
-                    outTime: '',
-                    rate: defaultRate,
-                    advance: 0,
-                    remark: ''
-                };
+                let dayEarned = 0;
+                if (dayData.status === 'present') { dayEarned = Number(dayData.rate); totalWorkedDays += 1; }
+                else if (dayData.status === 'halfday') { dayEarned = Number(dayData.rate) / 2; totalWorkedDays += 0.5; }
 
-                // Earnings Calculations
-                let dayEarnings = 0;
-                if (dayRecord.status === 'present') {
-                    fullDaysCount += 1;
-                    dayEarnings = parseFloat(dayRecord.rate) || defaultRate;
-                } else if (dayRecord.status === 'halfday') {
-                    halfDaysCount += 1;
-                    dayEarnings = (parseFloat(dayRecord.rate) || defaultRate) / 2;
-                }
-
-                const dayAdvance = parseFloat(dayRecord.advance) || 0;
-                totalGrossEarned += dayEarnings;
-                totalAdvances += dayAdvance;
-
-                // Status Badge & Background Styling
-                let statusBadge = '';
-                let cellBg = 'bg-white';
-                
-                if (holidayName) {
-                    cellBg = 'bg-amber-100/60 hover:bg-amber-100'; // Soft pastel yellow for holidays
-                } else if (dayRecord.status === 'present') {
-                    cellBg = 'bg-emerald-50/40 hover:bg-emerald-50/70';
-                } else if (dayRecord.status === 'halfday') {
-                    cellBg = 'bg-amber-50/40 hover:bg-amber-50/70';
-                }
-
-                if (dayRecord.status === 'present') {
-                    statusBadge = `<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px] inline-flex items-center gap-0.5"><i class="fa-solid fa-check text-[9px]"></i> Present</span>`;
-                } else if (dayRecord.status === 'halfday') {
-                    statusBadge = `<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[10px] inline-flex items-center gap-0.5"><i class="fa-solid fa-clock-rotate-left text-[9px]"></i> Half</span>`;
-                } else {
-                    statusBadge = `<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 font-medium text-[10px]">Absent</span>`;
-                }
+                totalEarned += dayEarned;
+                totalAdvance += Number(dayData.advance || 0);
 
                 const cell = document.createElement('div');
-                cell.className = `${cellBg} p-2 day-cell flex flex-col justify-between cursor-pointer group transition-all`;
-                cell.onclick = () => openModal(day);
+                cell.className = `calendar-day ${isHoliday ? 'holiday' : ''}`;
+                cell.onclick = () => openEditModal(day, dayData, dateKey);
+
+                let statusPillClass = 'pill-absent';
+                let statusText = 'Absent';
+                if (dayData.status === 'present') { statusPillClass = 'pill-present'; statusText = 'Present'; }
+                if (dayData.status === 'halfday') { statusPillClass = 'pill-halfday'; statusText = 'Half Day'; }
 
                 cell.innerHTML = `
-                    <div>
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${dayRecord.status !== 'absent' ? 'bg-slate-800 text-white' : 'text-slate-700 bg-slate-100/80'}">${day}</span>
-                            ${statusBadge}
-                        </div>
-
-                        ${holidayName ? `
-                            <div class="my-1">
-                                <span class="text-[9px] font-bold text-amber-900 bg-amber-200/80 px-1.5 py-0.5 rounded inline-block truncate max-w-full" title="${holidayName}">
-                                    <i class="fa-solid fa-sun text-[8px] mr-0.5 text-amber-600"></i>${holidayName}
-                                </span>
-                            </div>
-                        ` : ''}
-                        
-                        ${dayRecord.status !== 'absent' ? `
-                            <div class="text-[10px] font-semibold text-slate-600 mt-0.5">
-                                ${dayRecord.inTime || dayRecord.outTime ? `<i class="fa-regular fa-clock text-[9px] text-slate-400 mr-0.5"></i>${dayRecord.inTime || '--:--'} - ${dayRecord.outTime || '--:--'}` : ''}
-                            </div>
-                        ` : ''}
-
-                        ${dayRecord.remark ? `
-                            <p class="text-[9px] text-slate-500 italic truncate mt-0.5 bg-slate-100/80 px-1 py-0.5 rounded">
-                                ${dayRecord.remark}
-                            </p>
-                        ` : ''}
+                    <div class="day-number">
+                        <span>${day}</span>
+                        ${isHoliday ? `<span class="holiday-tag" title="${isHoliday}">${isHoliday}</span>` : ''}
                     </div>
-
-                    <div class="mt-1 pt-1 border-t border-slate-200/50 flex items-center justify-between text-[10px]">
-                        <span class="font-bold text-slate-700">${dayEarnings > 0 ? 'LKR ' + dayEarnings.toLocaleString() : ''}</span>
-                        ${dayAdvance > 0 ? `<span class="font-bold text-rose-600 bg-rose-50 px-1 rounded">Adv: ${dayAdvance}</span>` : ''}
+                    <div>
+                        <div class="status-pill ${statusPillClass}">${statusText}</div>
+                        ${dayData.inTime ? `<div class="time-info">🕒 ${dayData.inTime} - ${dayData.outTime || '...'}</div>` : ''}
+                        ${dayData.editedBy ? `<div class="editor-by">By: ${dayData.editedBy}</div>` : ''}
                     </div>
                 `;
-
                 grid.appendChild(cell);
             }
 
-            // Update Summary Cards
-            const totalWorkedDays = fullDaysCount + (halfDaysCount * 0.5);
-            const netBalance = totalGrossEarned - totalAdvances;
+            // Update Stats
+            const balance = totalEarned - totalAdvance;
+            const halfBalance = Math.max(0, balance / 2);
 
-            document.getElementById('statWorkedDays').innerText = `${totalWorkedDays} Days`;
-            document.getElementById('statWorkedSub').innerText = `${fullDaysCount} Full | ${halfDaysCount} Half Days`;
-            document.getElementById('statGrossSalary').innerText = formatCurrency(totalGrossEarned);
-            document.getElementById('statTotalAdvance').innerText = formatCurrency(totalAdvances);
-            document.getElementById('statNetBalance').innerText = formatCurrency(netBalance);
+            document.getElementById('statDays').innerText = `${totalWorkedDays} Days`;
+            document.getElementById('statTotal').innerText = `Rs. ${totalEarned.toLocaleString()}`;
+            document.getElementById('statAdvance').innerText = `Rs. ${totalAdvance.toLocaleString()}`;
+            document.getElementById('statBalance').innerText = `Rs. ${balance.toLocaleString()}`;
 
-            // Update 50/50 Split Calculation for Malith & Shyamini
-            const halfShare = netBalance > 0 ? netBalance / 2 : 0;
-            document.getElementById('splitTotalBalance').innerText = formatCurrency(netBalance);
-            document.getElementById('malithAmount').innerText = formatCurrency(halfShare);
-            document.getElementById('shyaminiAmount').innerText = formatCurrency(halfShare);
+            document.getElementById('splitMalith').innerText = `Rs. ${halfBalance.toLocaleString()}`;
+            document.getElementById('splitShyamini').innerText = `Rs. ${halfBalance.toLocaleString()}`;
         }
 
-        function openModal(day) {
-            activeDayNum = day;
-            const monthVal = document.getElementById('monthPicker').value;
-            const [year, month] = monthVal.split('-').map(Number);
-            const monthData = loadMonthData(monthVal);
-            const defaultRate = getGlobalRate();
+        function openEditModal(day, dayData, dateKey) {
+            document.getElementById('modalDateTitle').innerText = `Edit Date: ${dateKey}`;
+            document.getElementById('modalDay').value = day;
+            document.getElementById('modalStatus').value = dayData.status || 'absent';
+            document.getElementById('modalInTime').value = dayData.inTime || '';
+            document.getElementById('modalOutTime').value = dayData.outTime || '';
+            document.getElementById('modalRate').value = dayData.rate || DEFAULT_RATE;
+            document.getElementById('modalAdvance').value = dayData.advance || 0;
+            document.getElementById('modalRemark').value = dayData.remark || '';
 
-            const record = monthData[day] || {
-                status: 'absent',
-                inTime: '08:30',
-                outTime: '17:00',
-                rate: defaultRate,
-                advance: 0,
-                remark: ''
-            };
-
-            const dayStr = String(day).padStart(2, '0');
-            const monthStr = String(month).padStart(2, '0');
-            const isoDateKey = `${year}-${monthStr}-${dayStr}`;
-            const holidayName = sriLankaHolidays[isoDateKey] || null;
-
-            // Set Holiday Banner
-            const banner = document.getElementById('holidayBanner');
-            const bannerText = document.getElementById('holidayBannerText');
-            if (holidayName) {
-                bannerText.innerText = `Sri Lankan Holiday: ${holidayName}`;
-                banner.classList.remove('hidden');
-            } else {
-                banner.classList.add('hidden');
-            }
-
-            // Set Modal Header
-            const dateObj = new Date(year, month - 1, day);
-            const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
-            const monthName = dateObj.toLocaleDateString('en-US', { month: 'long' });
-            
-            document.getElementById('modalDateTitle').innerText = `${monthName} ${day}, ${year}`;
-            document.getElementById('modalDateSubtitle').innerText = `${dayName} - Update sitter attendance details`;
-
-            // Populate Form Fields
-            setModalStatus(record.status || 'absent');
-            document.getElementById('modalInTime').value = record.inTime || '08:30';
-            document.getElementById('modalOutTime').value = record.outTime || '17:00';
-            document.getElementById('modalRate').value = record.rate || defaultRate;
-            document.getElementById('modalAdvance').value = record.advance || '';
-            document.getElementById('modalRemark').value = record.remark || '';
-
-            // Show Modal with Animation
-            const modal = document.getElementById('dayModal');
-            const card = document.getElementById('dayModalCard');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                card.classList.remove('scale-95', 'opacity-0');
-                card.classList.add('scale-100', 'opacity-100');
-            }, 10);
+            document.getElementById('editModal').style.display = 'flex';
         }
 
         function closeModal() {
-            const modal = document.getElementById('dayModal');
-            const card = document.getElementById('dayModalCard');
-            card.classList.remove('scale-100', 'opacity-100');
-            card.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 200);
+            document.getElementById('editModal').style.display = 'none';
         }
 
-        function setModalStatus(status) {
-            selectedStatus = status;
-            
-            const btnPresent = document.getElementById('btnStatusPresent');
-            const btnHalf = document.getElementById('btnStatusHalf');
-            const btnAbsent = document.getElementById('btnStatusAbsent');
-
-            btnPresent.className = 'py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 transition border-slate-200 text-slate-600 bg-white hover:bg-slate-50';
-            btnHalf.className = 'py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 transition border-slate-200 text-slate-600 bg-white hover:bg-slate-50';
-            btnAbsent.className = 'py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 transition border-slate-200 text-slate-600 bg-white hover:bg-slate-50';
-
-            if (status === 'present') {
-                btnPresent.className = 'py-2.5 rounded-xl border font-bold text-xs flex flex-col items-center gap-1 transition border-emerald-500 bg-emerald-500 text-white shadow-md shadow-emerald-500/20';
-            } else if (status === 'halfday') {
-                btnHalf.className = 'py-2.5 rounded-xl border font-bold text-xs flex flex-col items-center gap-1 transition border-amber-500 bg-amber-500 text-white shadow-md shadow-amber-500/20';
-            } else {
-                btnAbsent.className = 'py-2.5 rounded-xl border font-bold text-xs flex flex-col items-center gap-1 transition border-slate-600 bg-slate-700 text-white shadow-md shadow-slate-700/20';
-            }
-        }
-
-        function saveDayDetails() {
-            if (!activeDayNum) return;
-
+        function saveDayEntry() {
             const monthVal = document.getElementById('monthPicker').value;
-            const monthData = loadMonthData(monthVal);
+            const day = document.getElementById('modalDay').value;
+            const data = loadMonthData(monthVal);
 
-            monthData[activeDayNum] = {
-                status: selectedStatus,
+            const newStatus = document.getElementById('modalStatus').value;
+            const newAdvance = document.getElementById('modalAdvance').value;
+
+            data[day] = {
+                status: newStatus,
                 inTime: document.getElementById('modalInTime').value,
                 outTime: document.getElementById('modalOutTime').value,
-                rate: parseFloat(document.getElementById('modalRate').value) || getGlobalRate(),
-                advance: parseFloat(document.getElementById('modalAdvance').value) || 0,
-                remark: document.getElementById('modalRemark').value.trim()
+                rate: document.getElementById('modalRate').value,
+                advance: newAdvance,
+                remark: document.getElementById('modalRemark').value,
+                editedBy: currentUser
             };
 
-            saveMonthData(monthVal, monthData);
+            localStorage.setItem(getStorageKey(monthVal), JSON.stringify(data));
+            logActivity(`Updated Day ${day} status to <strong>${newStatus.toUpperCase()}</strong> (Advance: Rs. ${newAdvance})`);
+            
             closeModal();
             renderCalendar();
         }
 
-        // CSV Export Engine
-        function exportCSV() {
-            const monthVal = document.getElementById('monthPicker').value;
-            const monthData = loadMonthData(monthVal);
-            const [year, month] = monthVal.split('-').map(Number);
-            const daysInMonth = new Date(year, month, 0).getDate();
-            const defaultRate = getGlobalRate();
-
-            let csvRows = ['Date,Day,Holiday,Status,In Time,Out Time,Rate (LKR),Advance (LKR),Earned (LKR),Remark'];
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateObj = new Date(year, month - 1, day);
-                const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-                const dayStr = String(day).padStart(2, '0');
-                const monthStr = String(month).padStart(2, '0');
-                const isoDateKey = `${year}-${monthStr}-${dayStr}`;
-                const holidayName = sriLankaHolidays[isoDateKey] || '';
-
-                const rec = monthData[day] || { status: 'absent', inTime: '', outTime: '', rate: defaultRate, advance: 0, remark: '' };
-
-                let earned = 0;
-                if (rec.status === 'present') earned = rec.rate || defaultRate;
-                if (rec.status === 'halfday') earned = (rec.rate || defaultRate) / 2;
-
-                const row = [
-                    `${isoDateKey}`,
-                    dayName,
-                    `"${holidayName}"`,
-                    rec.status,
-                    rec.inTime || '',
-                    rec.outTime || '',
-                    rec.rate || defaultRate,
-                    rec.advance || 0,
-                    earned,
-                    `"${(rec.remark || '').replace(/"/g, '""')}"`
-                ];
-                csvRows.push(row.join(','));
-            }
-
-            const csvString = csvRows.join('\n');
-            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.setAttribute('href', url);
-            link.setAttribute('download', `BabySitter_Attendance_${monthVal}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        function openLogModal() {
+            const logs = JSON.parse(localStorage.getItem('babysitter_logs') || '[]');
+            const logContent = document.getElementById('logContent');
+            logContent.innerHTML = logs.length ? logs.map(l => `<div style="padding: 6px 0; border-bottom: 1px solid #f1f5f9;">${l}</div>`).join('') : '<p>No activity records found.</p>';
+            document.getElementById('logModal').style.display = 'flex';
         }
 
-        // Initialize App on Window Load
-        window.onload = function() {
-            renderCalendar();
-        };
+        // Initialize
+        checkDeviceUser();
+        renderCalendar();
     </script>
 </body>
 </html>
