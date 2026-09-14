@@ -3,28 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baby Sitter Attendance & Payment Portal</title>
-    <!-- Google Fonts & Font Awesome Icons -->
+    <title>Parents Admin - Baby Sitter Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#f0f3ff',
-                            100: '#e0e7ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                        }
-                    }
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                    colors: { brand: { 50: '#f0f3ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' } }
                 }
             }
         }
@@ -32,70 +20,42 @@
     <style>
         body { background-color: #f8fafc; color: #1e293b; font-family: 'Plus Jakarta Sans', sans-serif; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
-        .day-cell { min-height: 115px; transition: all 0.2s ease-in-out; }
+        .day-cell { min-height: 115px; transition: all 0.2s; }
         .day-cell:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
     </style>
 </head>
 <body class="min-h-screen pb-12">
+
     <!-- Header -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-brand-500/20">
-                    <i class="fa-solid fa-baby-carriage"></i>
+                <div class="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold text-xl shadow-md">
+                    <i class="fa-solid fa-user-shield"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-800 tracking-tight" id="headerTitle">Baby Sitter Attendance & Salary Tracker</h1>
-                    <p class="text-xs text-slate-500 font-medium" id="headerSubtitle">Daily attendance, timings, holidays & automatic 50/50 payment split</p>
+                    <h1 class="text-xl font-bold text-slate-800 tracking-tight">Parents Portal (Admin Control)</h1>
+                    <p class="text-xs text-slate-500 font-medium">Logged in as: <span id="loggedUserDisplay" class="font-bold text-brand-600">Checking...</span></p>
                 </div>
             </div>
 
-            <!-- Header Controls -->
             <div class="flex flex-wrap items-center gap-3">
-                <!-- Role Switcher (Hidden in Sitter URL mode) -->
-                <button onclick="toggleUserRole()" id="roleBadgeBtn" class="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-brand-700 border border-indigo-200 text-xs font-bold px-3 py-2 rounded-xl transition">
-                    <i class="fa-solid fa-users-gear text-sm"></i>
-                    <span id="currentRoleText">Role: Parents Portal</span>
+                <button onclick="switchAdminUser()" class="bg-indigo-50 hover:bg-indigo-100 text-brand-700 border border-indigo-200 text-xs font-bold px-3 py-2 rounded-xl">
+                    <i class="fa-solid fa-arrows-rotate mr-1"></i> Switch Malith/Shyamini
                 </button>
-
-                <!-- Notifications -->
-                <button onclick="openNotifModal()" class="relative bg-slate-100 hover:bg-slate-200 text-slate-700 p-2.5 rounded-xl border border-slate-200 transition">
-                    <i class="fa-solid fa-bell text-sm"></i>
-                    <span id="notifBadge" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-bold w-4.5 h-4.5 rounded-full flex items-center justify-center">0</span>
-                </button>
-
-                <!-- Activity Log -->
-                <button onclick="openLogModal()" class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 transition">
-                    <i class="fa-solid fa-clock-rotate-left text-sm text-slate-500"></i>
-                    <span class="hidden sm:inline">Activity Log</span>
-                </button>
-
-                <!-- Month Picker -->
                 <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-                    <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white transition">
-                        <i class="fa-solid fa-chevron-left text-xs"></i>
-                    </button>
-                    <input type="month" id="monthPicker" value="2026-09" onchange="onMonthSelect()" class="bg-transparent font-bold text-slate-700 text-sm px-3 focus:outline-none cursor-pointer">
-                    <button onclick="changeMonth(1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white transition">
-                        <i class="fa-solid fa-chevron-right text-xs"></i>
-                    </button>
+                    <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                    <input type="month" id="monthPicker" value="2026-09" onchange="renderCalendar()" class="bg-transparent font-bold text-slate-700 text-sm px-3 focus:outline-none cursor-pointer">
+                    <button onclick="changeMonth(1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white"><i class="fa-solid fa-chevron-right text-xs"></i></button>
                 </div>
-
-                <button id="exportCsvBtn" onclick="exportCSV()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl shadow-xs transition">
-                    <i class="fa-solid fa-file-csv text-sm"></i>
-                    <span class="hidden sm:inline">Export CSV</span>
-                </button>
+                <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl"><i class="fa-solid fa-file-csv mr-1"></i> Export CSV</button>
             </div>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
-
-        <!-- Parents Summary Cards -->
-        <div id="parentSummaryCards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Worked Days</p>
@@ -104,7 +64,6 @@
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg font-bold"><i class="fa-solid fa-calendar-check"></i></div>
             </div>
-
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Total Earned</p>
@@ -113,647 +72,279 @@
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-lg font-bold"><i class="fa-solid fa-wallet"></i></div>
             </div>
-
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Total Advances</p>
                     <h3 id="statTotalAdvance" class="text-2xl font-extrabold text-rose-500">LKR 0</h3>
-                    <p class="text-xs text-slate-500 mt-1">Advances / Partials taken</p>
+                    <p class="text-xs text-slate-500 mt-1">Advances / Partials</p>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center text-lg font-bold"><i class="fa-solid fa-hand-holding-dollar"></i></div>
             </div>
-
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Net Balance Payable</p>
                     <h3 id="statNetBalance" class="text-2xl font-extrabold text-emerald-600">LKR 0</h3>
-                    <p class="text-xs text-emerald-600/80 font-medium mt-1">Earned minus advances</p>
+                    <p class="text-xs text-emerald-600 font-medium mt-1">Final Payment Due</p>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold"><i class="fa-solid fa-money-bill-wave"></i></div>
             </div>
         </div>
 
-        <!-- Sitter Profile Card -->
-        <div id="sitterProfileSummaryCard" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-                <div class="flex items-center gap-4">
-                    <div class="relative">
-                        <img id="sitterAvatarImg" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150" class="w-20 h-20 rounded-2xl object-cover border-2 border-brand-500 shadow-md">
-                        <span class="absolute -bottom-1 -right-1 bg-emerald-500 w-4 h-4 rounded-full border-2 border-white"></span>
-                    </div>
-                    <div>
-                        <h3 id="sitterProfileName" class="text-lg font-bold text-slate-800">Baby Sitter Profile</h3>
-                        <p id="sitterProfileLocation" class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot text-rose-500 mr-1"></i> Address Not Uploaded</p>
-                        <p id="sitterProfileBank" class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-building-columns text-indigo-500 mr-1"></i> Bank Account Info Not Uploaded</p>
-                    </div>
+        <!-- Sitter Bio Profile View for Parents -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-4">
+                <img id="adminViewSitterPhoto" src="https://via.placeholder.com/150" class="w-16 h-16 rounded-2xl object-cover border-2 border-brand-500">
+                <div>
+                    <h3 id="adminViewSitterName" class="font-bold text-slate-800">Sitter Bio-Data</h3>
+                    <p id="adminViewSitterBank" class="text-xs text-slate-500"><i class="fa-solid fa-building-columns mr-1 text-indigo-500"></i> Bank: Not Set</p>
+                    <p id="adminViewSitterLocation" class="text-xs text-slate-500"><i class="fa-solid fa-location-dot mr-1 text-rose-500"></i> Address: Not Set</p>
                 </div>
-                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                    <button onclick="openProfileModal()" class="flex-1 md:flex-none px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-id-card"></i> Update Bio-Data / NIC Copy
-                    </button>
-                    <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-right flex-1 md:flex-none">
-                        <span class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider block">Your Net Earnings</span>
-                        <span id="sitterEarnedStat" class="text-lg font-extrabold text-emerald-700">LKR 0</span>
-                    </div>
-                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="viewNicDoc('front')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700"><i class="fa-solid fa-id-card mr-1"></i> NIC Front</button>
+                <button onclick="viewNicDoc('back')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700"><i class="fa-solid fa-id-card mr-1"></i> NIC Back</button>
             </div>
         </div>
 
-        <!-- Rate & Legend Bar -->
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="flex items-center gap-3" id="rateControlContainer">
-                <i class="fa-solid fa-sliders text-brand-600 text-lg"></i>
-                <div class="flex items-center gap-2">
-                    <span class="text-sm font-semibold text-slate-700">Standard Daily Rate (LKR):</span>
-                    <input type="number" id="globalDailyRate" value="1300" onchange="updateGlobalRate()" class="w-28 px-3 py-1.5 border border-slate-300 rounded-lg text-sm font-bold text-slate-800 focus:ring-2 focus:ring-brand-500 outline-none">
-                </div>
-            </div>
-            
-            <div class="flex flex-wrap items-center gap-4 text-xs font-semibold">
-                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Present</div>
-                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Half Day</div>
-                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-slate-300 inline-block"></span> Absent</div>
-                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-300 border border-amber-400 inline-block"></span> Holiday / Poya</div>
+        <!-- Controls -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-sliders text-brand-600"></i>
+                <span class="text-sm font-semibold text-slate-700">Daily Rate (LKR):</span>
+                <input type="number" id="globalDailyRate" value="1300" onchange="updateGlobalRate()" class="w-28 px-3 py-1 border border-slate-300 rounded-lg text-sm font-bold text-slate-800 focus:ring-2 focus:ring-brand-500 outline-none">
             </div>
         </div>
 
-        <!-- Calendar Container -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div class="calendar-grid bg-slate-100/80 border-b border-slate-200 text-center text-xs font-bold text-slate-500 uppercase tracking-wider py-3">
+        <!-- Calendar -->
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+            <div class="calendar-grid bg-slate-100 border-b border-slate-200 text-center text-xs font-bold text-slate-500 uppercase py-3">
                 <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
             </div>
             <div id="calendarGrid" class="calendar-grid bg-slate-200 gap-px"></div>
         </div>
 
-        <!-- 50/50 Payment Split Section -->
-        <div id="splitCalculationSection" class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 relative overflow-hidden">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-800">
+        <!-- 50/50 Split -->
+        <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800">
+            <div class="flex flex-col md:flex-row justify-between items-center pb-6 border-b border-slate-800 gap-4">
                 <div>
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 text-xs font-semibold mb-2">
-                        <i class="fa-solid fa-scale-balanced"></i> Auto 50/50 Equal Split
-                    </div>
-                    <h2 class="text-2xl font-bold tracking-tight">Monthly Payment Split</h2>
-                    <p class="text-xs text-slate-400 mt-1">Automated equal share contribution of remaining net balance payable</p>
+                    <span class="px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 text-xs font-semibold"><i class="fa-solid fa-scale-balanced mr-1"></i> Auto 50/50 Equal Split</span>
+                    <h2 class="text-2xl font-bold mt-2">Monthly Payment Split</h2>
                 </div>
-                
-                <div class="bg-slate-800/80 backdrop-blur-md px-6 py-3 rounded-2xl border border-slate-700/60 flex items-center gap-4">
-                    <span class="text-xs text-slate-400 font-medium">Total Net Payable:</span>
+                <div class="bg-slate-800 px-6 py-3 rounded-2xl border border-slate-700 text-right">
+                    <span class="text-xs text-slate-400 block">Total Payable</span>
                     <span id="splitTotalBalance" class="text-2xl font-extrabold text-emerald-400">LKR 0</span>
                 </div>
             </div>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                <!-- Malith -->
-                <div class="bg-slate-800/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/60">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg font-bold">
-                                <i class="fa-solid fa-user-tie"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-slate-100">Malith's Share</h4>
-                                <p class="text-xs text-slate-400">50% Contribution (+94787365590)</p>
-                            </div>
-                        </div>
-                        <span class="text-xs font-semibold bg-blue-500/20 text-blue-300 px-2.5 py-1 rounded-lg">Half Share</span>
-                    </div>
-                    <div class="text-3xl font-extrabold text-white tracking-tight" id="malithAmount">LKR 0</div>
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                    <h4 class="font-bold text-slate-100">Malith's Share (50%)</h4>
+                    <p class="text-xs text-slate-400 mb-2">+94787365590</p>
+                    <div class="text-3xl font-extrabold text-white" id="malithAmount">LKR 0</div>
                 </div>
-
-                <!-- Shyamini -->
-                <div class="bg-slate-800/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/60">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-lg font-bold">
-                                <i class="fa-solid fa-user-nurse"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-slate-100">Shyamini's Share</h4>
-                                <p class="text-xs text-slate-400">50% Contribution (0769192553)</p>
-                            </div>
-                        </div>
-                        <span class="text-xs font-semibold bg-purple-500/20 text-purple-300 px-2.5 py-1 rounded-lg">Half Share</span>
-                    </div>
-                    <div class="text-3xl font-extrabold text-white tracking-tight" id="shyaminiAmount">LKR 0</div>
+                <div class="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
+                    <h4 class="font-bold text-slate-100">Shyamini's Share (50%)</h4>
+                    <p class="text-xs text-slate-400 mb-2">0769192553</p>
+                    <div class="text-3xl font-extrabold text-white" id="shyaminiAmount">LKR 0</div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Day Edit Modal -->
+    <!-- Modal for Edit -->
     <div id="dayModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 transition-all scale-95 opacity-0" id="dayModalCard">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
-                <div>
-                    <h3 id="modalDateTitle" class="text-lg font-bold text-slate-800">Edit Day Details</h3>
-                    <p id="modalDateSubtitle" class="text-xs text-slate-500">Update work status, time slots, rate & advance</p>
-                </div>
-                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between border-b pb-3">
+                <h3 id="modalDateTitle" class="font-bold text-slate-800">Edit Day Details</h3>
+                <button onclick="closeModal()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
             </div>
-
-            <div id="holidayBanner" class="hidden mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium flex items-center gap-2">
-                <i class="fa-solid fa-sun text-amber-500 text-sm"></i>
-                <span id="holidayBannerText">Holiday</span>
-            </div>
-
-            <div class="space-y-4">
-                <div id="modalStatusGroup">
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Attendance Status</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button type="button" onclick="setModalStatus('present')" id="btnStatusPresent" class="py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1">
-                            <i class="fa-solid fa-check text-sm"></i> Present
-                        </button>
-                        <button type="button" onclick="setModalStatus('halfday')" id="btnStatusHalf" class="py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1">
-                            <i class="fa-solid fa-clock-rotate-left text-sm"></i> Half Day
-                        </button>
-                        <button type="button" onclick="setModalStatus('absent')" id="btnStatusAbsent" class="py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1">
-                            <i class="fa-solid fa-xmark text-sm"></i> Absent
-                        </button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">In Time</label>
-                        <input type="time" id="modalInTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Out Time</label>
-                        <input type="time" id="modalOutTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 outline-none">
-                    </div>
-                </div>
-
-                <div id="modalFinancialGroup" class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Daily Rate (LKR)</label>
-                        <input type="number" id="modalRate" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-brand-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Advance Given (LKR)</label>
-                        <input type="number" id="modalAdvance" placeholder="0" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-rose-600 focus:ring-2 focus:ring-brand-500 outline-none">
-                    </div>
-                </div>
-
-                <div>
-                    <label id="modalRemarkLabel" class="block text-xs font-semibold text-slate-600 mb-1">Remarks / Note</label>
-                    <input type="text" id="modalRemark" placeholder="e.g. Requesting leave next week" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+            <div id="leaveAlertBox" class="hidden p-3 bg-amber-50 border border-amber-200 text-amber-900 text-xs rounded-xl font-semibold"></div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Status</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" onclick="setModalStatus('present')" id="btnStatusPresent" class="py-2 rounded-xl border text-xs font-bold">Present</button>
+                    <button type="button" onclick="setModalStatus('halfday')" id="btnStatusHalf" class="py-2 rounded-xl border text-xs font-bold">Half Day</button>
+                    <button type="button" onclick="setModalStatus('absent')" id="btnStatusAbsent" class="py-2 rounded-xl border text-xs font-bold">Absent</button>
                 </div>
             </div>
-
-            <div class="flex items-center justify-end gap-3 mt-8 pt-4 border-t border-slate-100">
-                <button onclick="closeModal()" class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">Cancel</button>
-                <button onclick="saveDayDetails()" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-500/20 transition">Save & Sync</button>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="text-xs font-semibold text-slate-600 block mb-1">In Time</label><input type="time" id="modalInTime" class="w-full p-2 border rounded-xl text-sm"></div>
+                <div><label class="text-xs font-semibold text-slate-600 block mb-1">Out Time</label><input type="time" id="modalOutTime" class="w-full p-2 border rounded-xl text-sm"></div>
             </div>
-        </div>
-    </div>
-
-    <!-- Sitter Profile Modal -->
-    <div id="profileModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100">
-            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
-                <h3 class="text-lg font-bold text-slate-800">Sitter Bio-Data & Documents</h3>
-                <button onclick="document.getElementById('profileModal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="text-xs font-semibold text-slate-600 block mb-1">Daily Rate (LKR)</label><input type="number" id="modalRate" class="w-full p-2 border rounded-xl text-sm font-bold"></div>
+                <div><label class="text-xs font-semibold text-slate-600 block mb-1">Advance Given (LKR)</label><input type="number" id="modalAdvance" class="w-full p-2 border rounded-xl text-sm text-rose-600 font-bold"></div>
             </div>
-            
-            <div class="space-y-4 text-xs">
-                <div>
-                    <label class="font-bold text-slate-600 block mb-1">Full Name</label>
-                    <input type="text" id="bioFullName" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-500">
-                </div>
-                <div>
-                    <label class="font-bold text-slate-600 block mb-1">Address</label>
-                    <input type="text" id="bioLocation" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-500">
-                </div>
-                <div>
-                    <label class="font-bold text-slate-600 block mb-1">Bank Account Details</label>
-                    <input type="text" id="bioBank" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-500">
-                </div>
-                <div>
-                    <label class="font-bold text-slate-600 block mb-1">Profile Photo Link (URL)</label>
-                    <input type="text" id="bioPhoto" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-500">
-                </div>
-                <div>
-                    <label class="font-bold text-slate-600 block mb-1">NIC Card Copy Link (URL)</label>
-                    <input type="text" id="bioNIC" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand-500">
-                </div>
+            <div><label class="text-xs font-semibold text-slate-600 block mb-1">Note</label><input type="text" id="modalRemark" class="w-full p-2 border rounded-xl text-sm"></div>
+            <div class="flex justify-end gap-2 pt-4 border-t">
+                <button onclick="closeModal()" class="px-4 py-2 border rounded-xl text-xs font-semibold">Cancel</button>
+                <button onclick="saveDayDetails()" class="px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-bold">Save Details</button>
             </div>
-
-            <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
-                <button onclick="document.getElementById('profileModal').classList.add('hidden')" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold">Cancel</button>
-                <button onclick="saveSitterBioData()" class="px-4 py-2 bg-brand-600 text-white font-bold text-xs rounded-xl shadow-md transition">Save & Send WhatsApp Alert</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Notifications Modal -->
-    <div id="notifModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-bell text-brand-600 mr-2"></i>Notifications</h3>
-                <button onclick="document.getElementById('notifModal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div id="notifList" class="space-y-3 max-h-80 overflow-y-auto text-xs"></div>
-        </div>
-    </div>
-
-    <!-- Activity Log Modal -->
-    <div id="logModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-clock-rotate-left text-brand-600 mr-2"></i>System Log</h3>
-                <button onclick="document.getElementById('logModal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div id="logList" class="space-y-2 max-h-96 overflow-y-auto text-xs font-mono bg-slate-50 p-3 rounded-2xl border border-slate-200"></div>
         </div>
     </div>
 
     <script>
-        const MALITH_PHONE = "94787365590";
-        const sriLankaHolidays = {
-            "2026-01-03": "Duruthu Poya", "2026-01-15": "Thai Pongal", "2026-02-01": "Navam Poya",
-            "2026-02-04": "National Day", "2026-03-02": "Madin Poya", "2026-04-01": "Bak Poya",
-            "2026-04-13": "New Year Eve", "2026-04-14": "Sinhala & Tamil New Year",
-            "2026-05-01": "May Day / Vesak", "2026-05-02": "Vesak Day 2",
-            "2026-05-30": "Adhi Poson Poya", "2026-06-29": "Poson Poya", "2026-07-29": "Esala Poya",
-            "2026-08-26": "Milad-Un-Nabi", "2026-08-27": "Nikini Poya", "2026-09-26": "Binara Poya",
-            "2026-10-25": "Vap Poya", "2026-11-08": "Deepavali", "2026-11-24": "Il Poya",
-            "2026-12-23": "Unduvap Poya", "2026-12-25": "Christmas Day"
+        // FIREBASE DATABASE LINK
+        const FIREBASE_DB_URL = "YOUR_FIREBASE_DATABASE_URL_HERE"; // <--- PASTE YOUR FIREBASE URL HERE
+
+        const MALITH_NUM = "94787365590";
+        const SHYAMINI_NUM = "0769192553";
+        let activeDayNum = null, selectedStatus = 'absent', monthData = {}, sitterBio = {};
+
+        window.onload = function() {
+            let logged = localStorage.getItem('parent_user');
+            if (!logged) {
+                logged = prompt("Login as Parent (Type 'Malith' or 'Shyamini'):", "Malith");
+                if (logged) localStorage.setItem('parent_user', logged);
+            }
+            document.getElementById('loggedUserDisplay').innerText = logged || "Malith";
+            fetchRealtimeData();
         };
 
-        let currentUserRole = 'parent';
-        let isUrlLockedRole = false; // Link එකෙන් Lock කරලාද පරීක්ෂාව
-        let activeDayNum = null;
-        let selectedStatus = 'absent';
-
-        function formatCurrency(amount) {
-            return 'LKR ' + Math.round(amount).toLocaleString('en-US');
-        }
-
-        function getStorageKey(monthStr) {
-            return `babysitter_data_${monthStr}`;
-        }
-
-        function loadMonthData(monthStr) {
-            const raw = localStorage.getItem(getStorageKey(monthStr));
-            return raw ? JSON.parse(raw) : {};
-        }
-
-        function saveMonthData(monthStr, data) {
-            localStorage.setItem(getStorageKey(monthStr), JSON.stringify(data));
-        }
-
-        function getGlobalRate() {
-            return parseFloat(document.getElementById('globalDailyRate').value) || 1300;
-        }
-
-        function updateGlobalRate() {
-            document.getElementById('statDefaultRate').innerText = getGlobalRate().toLocaleString();
-            renderCalendar();
-        }
-
-        function applyRoleView() {
-            const roleBadge = document.getElementById('currentRoleText');
-            if (currentUserRole === 'sitter') {
-                roleBadge.innerText = "Role: Baby Sitter Portal";
-                document.getElementById('parentSummaryCards').classList.add('hidden');
-                document.getElementById('splitCalculationSection').classList.add('hidden');
-                document.getElementById('exportCsvBtn').classList.add('hidden');
-                document.getElementById('rateControlContainer').classList.add('hidden');
-                document.getElementById('sitterProfileSummaryCard').classList.remove('hidden');
-                document.getElementById('headerTitle').innerText = "Baby Sitter Portal";
-                document.getElementById('headerSubtitle').innerText = "View your attendance, earnings & send leave requests";
-            } else {
-                roleBadge.innerText = "Role: Parents Portal";
-                document.getElementById('parentSummaryCards').classList.remove('hidden');
-                document.getElementById('splitCalculationSection').classList.remove('hidden');
-                document.getElementById('exportCsvBtn').classList.remove('hidden');
-                document.getElementById('rateControlContainer').classList.remove('hidden');
-                document.getElementById('sitterProfileSummaryCard').classList.add('hidden');
-                document.getElementById('headerTitle').innerText = "Baby Sitter Attendance & Salary Tracker";
-                document.getElementById('headerSubtitle').innerText = "Daily attendance, timings, holidays & automatic 50/50 payment split";
+        function switchAdminUser() {
+            const newUser = prompt("Switch User (Malith / Shyamini):", "Shyamini");
+            if (newUser) {
+                localStorage.setItem('parent_user', newUser);
+                document.getElementById('loggedUserDisplay').innerText = newUser;
             }
-            renderCalendar();
         }
 
-        function toggleUserRole() {
-            if (isUrlLockedRole) return; // Sitter URL එකකින් ආවා නම් Switch වෙන්න දෙන්නෙ නැත.
-            currentUserRole = currentUserRole === 'parent' ? 'sitter' : 'parent';
-            applyRoleView();
+        async function fetchRealtimeData() {
+            if (!FIREBASE_DB_URL || FIREBASE_DB_URL.includes("YOUR_FIREBASE")) return renderCalendar();
+            const monthVal = document.getElementById('monthPicker').value;
+            try {
+                const resData = await fetch(`${FIREBASE_DB_URL}/data_${monthVal}.json`).then(r => r.json());
+                const resBio = await fetch(`${FIREBASE_DB_URL}/sitter_bio.json`).then(r => r.json());
+                monthData = resData || {};
+                sitterBio = resBio || {};
+                updateBioView();
+                renderCalendar();
+            } catch(e) { console.error(e); }
         }
 
+        function updateBioView() {
+            if (sitterBio.name) document.getElementById('adminViewSitterName').innerText = sitterBio.name;
+            if (sitterBio.bank) document.getElementById('adminViewSitterBank').innerHTML = `<i class="fa-solid fa-building-columns mr-1 text-indigo-500"></i> Bank: ${sitterBio.bank}`;
+            if (sitterBio.location) document.getElementById('adminViewSitterLocation').innerHTML = `<i class="fa-solid fa-location-dot mr-1 text-rose-500"></i> Address: ${sitterBio.location}`;
+            if (sitterBio.photo) document.getElementById('adminViewSitterPhoto').src = sitterBio.photo;
+        }
+
+        function viewNicDoc(side) {
+            const img = side === 'front' ? sitterBio.nicFront : sitterBio.nicBack;
+            if (img) { const w = window.open(""); w.document.write(`<img src="${img}"/>`); }
+            else alert(`NIC ${side} image not uploaded yet.`);
+        }
+
+        function getGlobalRate() { return parseFloat(document.getElementById('globalDailyRate').value) || 1300; }
+        function updateGlobalRate() { document.getElementById('statDefaultRate').innerText = getGlobalRate().toLocaleString(); renderCalendar(); }
         function changeMonth(delta) {
             const picker = document.getElementById('monthPicker');
-            const [year, month] = picker.value.split('-').map(Number);
-            const date = new Date(year, month - 1 + delta, 1);
-            picker.value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-            renderCalendar();
-        }
-
-        function onMonthSelect() {
-            renderCalendar();
-        }
-
-        function logActivity(text) {
-            const logs = JSON.parse(localStorage.getItem('babysitter_logs') || '[]');
-            logs.unshift(`[${new Date().toLocaleString()}] ${text}`);
-            localStorage.setItem('babysitter_logs', JSON.stringify(logs));
-            updateNotificationCount();
-        }
-
-        function updateNotificationCount() {
-            const logs = JSON.parse(localStorage.getItem('babysitter_logs') || '[]');
-            const badge = document.getElementById('notifBadge');
-            if (logs.length > 0) {
-                badge.innerText = logs.length;
-                badge.classList.remove('hidden');
-            }
-        }
-
-        function openLogModal() {
-            const logs = JSON.parse(localStorage.getItem('babysitter_logs') || '[]');
-            document.getElementById('logList').innerHTML = logs.length ? logs.map(l => `<div class="p-1 border-b border-slate-200/60">${l}</div>`).join('') : '<p class="text-slate-400">No logs</p>';
-            document.getElementById('logModal').classList.remove('hidden');
-        }
-
-        function openNotifModal() {
-            const logs = JSON.parse(localStorage.getItem('babysitter_logs') || '[]');
-            document.getElementById('notifList').innerHTML = logs.length ? logs.slice(0, 5).map(l => `<div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">${l}</div>`).join('') : '<p class="text-slate-400 text-center py-4">No notifications</p>';
-            document.getElementById('notifModal').classList.remove('hidden');
+            const [y, m] = picker.value.split('-').map(Number);
+            const d = new Date(y, m - 1 + delta, 1);
+            picker.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            fetchRealtimeData();
         }
 
         function renderCalendar() {
             const monthVal = document.getElementById('monthPicker').value;
             const [year, month] = monthVal.split('-').map(Number);
-            const firstDayIndex = new Date(year, month - 1, 1).getDay();
+            const firstDay = new Date(year, month - 1, 1).getDay();
             const daysInMonth = new Date(year, month, 0).getDate();
-            const monthData = loadMonthData(monthVal);
             const defaultRate = getGlobalRate();
-
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
 
-            let fullDaysCount = 0, halfDaysCount = 0, totalGrossEarned = 0, totalAdvances = 0;
+            let full = 0, half = 0, gross = 0, advances = 0;
 
-            for (let i = 0; i < firstDayIndex; i++) {
-                grid.appendChild(Object.assign(document.createElement('div'), { className: 'bg-slate-50/50 day-cell' }));
-            }
+            for (let i = 0; i < firstDay; i++) grid.appendChild(Object.assign(document.createElement('div'), { className: 'bg-slate-50 day-cell' }));
 
             for (let day = 1; day <= daysInMonth; day++) {
-                const dayStr = String(day).padStart(2, '0');
-                const monthStr = String(month).padStart(2, '0');
-                const isoDateKey = `${year}-${monthStr}-${dayStr}`;
-                const holidayName = sriLankaHolidays[isoDateKey] || null;
-
-                const dayRecord = monthData[day] || { status: 'absent', inTime: '', outTime: '', rate: defaultRate, advance: 0, remark: '' };
-
-                let dayEarnings = 0;
-                if (dayRecord.status === 'present') { fullDaysCount++; dayEarnings = parseFloat(dayRecord.rate) || defaultRate; }
-                else if (dayRecord.status === 'halfday') { halfDaysCount++; dayEarnings = (parseFloat(dayRecord.rate) || defaultRate) / 2; }
-
-                const dayAdvance = parseFloat(dayRecord.advance) || 0;
-                totalGrossEarned += dayEarnings;
-                totalAdvances += dayAdvance;
-
-                let cellBg = holidayName ? 'bg-amber-100/60' : (dayRecord.status === 'present' ? 'bg-emerald-50/40' : (dayRecord.status === 'halfday' ? 'bg-amber-50/40' : 'bg-white'));
-                let statusBadge = dayRecord.status === 'present' ? '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">Present</span>' : (dayRecord.status === 'halfday' ? '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[10px]">Half</span>' : '<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 text-[10px]">Absent</span>');
+                const rec = monthData[day] || { status: 'absent', inTime: '', outTime: '', rate: defaultRate, advance: 0, remark: '', leaveReq: false };
+                let earned = 0;
+                if (rec.status === 'present') { full++; earned = parseFloat(rec.rate) || defaultRate; }
+                else if (rec.status === 'halfday') { half++; earned = (parseFloat(rec.rate) || defaultRate) / 2; }
+                
+                gross += earned; advances += parseFloat(rec.advance) || 0;
 
                 const cell = document.createElement('div');
-                cell.className = `${cellBg} p-2 day-cell flex flex-col justify-between cursor-pointer group transition-all`;
+                cell.className = `${rec.status === 'present' ? 'bg-emerald-50' : (rec.status === 'halfday' ? 'bg-amber-50' : 'bg-white')} p-2 day-cell flex flex-col justify-between cursor-pointer border-r border-b border-slate-100`;
                 cell.onclick = () => openModal(day);
-
                 cell.innerHTML = `
                     <div>
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${dayRecord.status !== 'absent' ? 'bg-slate-800 text-white' : 'text-slate-700 bg-slate-100'}">${day}</span>
-                            ${statusBadge}
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${rec.status !== 'absent' ? 'bg-slate-800 text-white' : 'text-slate-700 bg-slate-100'}">${day}</span>
+                            ${rec.leaveReq ? `<span class="bg-rose-500 text-white text-[9px] px-1 font-bold rounded">Req</span>` : ''}
                         </div>
-                        ${holidayName ? `<span class="text-[9px] font-bold text-amber-900 bg-amber-200/80 px-1 py-0.5 rounded block truncate"><i class="fa-solid fa-sun text-amber-600 mr-1"></i>${holidayName}</span>` : ''}
-                        ${dayRecord.status !== 'absent' && (dayRecord.inTime || dayRecord.outTime) ? `<div class="text-[10px] text-slate-600 font-semibold mt-1"><i class="fa-regular fa-clock text-[9px] mr-1"></i>${dayRecord.inTime || '--:--'} - ${dayRecord.outTime || '--:--'}</div>` : ''}
-                        ${dayRecord.remark ? `<p class="text-[9px] text-slate-500 italic truncate mt-1 bg-slate-100 px-1 rounded">${dayRecord.remark}</p>` : ''}
+                        ${rec.status !== 'absent' ? `<div class="text-[10px] text-slate-600 font-semibold"><i class="fa-regular fa-clock text-[9px]"></i> ${rec.inTime || '--'} - ${rec.outTime || '--'}</div>` : ''}
+                        ${rec.remark ? `<p class="text-[9px] text-slate-500 italic truncate mt-1 bg-slate-100 px-1 rounded">${rec.remark}</p>` : ''}
                     </div>
-                    <div class="mt-1 pt-1 border-t border-slate-200/50 flex items-center justify-between text-[10px]">
-                        <span class="font-bold text-slate-700">${dayEarnings > 0 ? 'LKR ' + dayEarnings.toLocaleString() : ''}</span>
-                        ${dayAdvance > 0 ? `<span class="font-bold text-rose-600 bg-rose-50 px-1 rounded">Adv: ${dayAdvance}</span>` : ''}
+                    <div class="pt-1 border-t flex justify-between text-[10px]">
+                        <span class="font-bold text-slate-700">${earned > 0 ? 'LKR ' + earned.toLocaleString() : ''}</span>
+                        ${rec.advance > 0 ? `<span class="font-bold text-rose-600">Adv: ${rec.advance}</span>` : ''}
                     </div>
                 `;
                 grid.appendChild(cell);
             }
 
-            const netBalance = totalGrossEarned - totalAdvances;
-            document.getElementById('statWorkedDays').innerText = `${fullDaysCount + halfDaysCount * 0.5} Days`;
-            document.getElementById('statWorkedSub').innerText = `${fullDaysCount} Full | ${halfDaysCount} Half`;
-            document.getElementById('statGrossSalary').innerText = formatCurrency(totalGrossEarned);
-            document.getElementById('statTotalAdvance').innerText = formatCurrency(totalAdvances);
-            document.getElementById('statNetBalance').innerText = formatCurrency(netBalance);
-            document.getElementById('sitterEarnedStat').innerText = formatCurrency(netBalance);
+            const net = gross - advances;
+            document.getElementById('statWorkedDays').innerText = `${full + half * 0.5} Days`;
+            document.getElementById('statWorkedSub').innerText = `${full} Full | ${half} Half`;
+            document.getElementById('statGrossSalary').innerText = 'LKR ' + gross.toLocaleString();
+            document.getElementById('statTotalAdvance').innerText = 'LKR ' + advances.toLocaleString();
+            document.getElementById('statNetBalance').innerText = 'LKR ' + net.toLocaleString();
 
-            const halfShare = netBalance > 0 ? netBalance / 2 : 0;
-            document.getElementById('splitTotalBalance').innerText = formatCurrency(netBalance);
-            document.getElementById('malithAmount').innerText = formatCurrency(halfShare);
-            document.getElementById('shyaminiAmount').innerText = formatCurrency(halfShare);
+            const split = net > 0 ? net / 2 : 0;
+            document.getElementById('splitTotalBalance').innerText = 'LKR ' + net.toLocaleString();
+            document.getElementById('malithAmount').innerText = 'LKR ' + split.toLocaleString();
+            document.getElementById('shyaminiAmount').innerText = 'LKR ' + split.toLocaleString();
         }
 
         function openModal(day) {
             activeDayNum = day;
-            const monthVal = document.getElementById('monthPicker').value;
-            const [year, month] = monthVal.split('-').map(Number);
-            const monthData = loadMonthData(monthVal);
             const defaultRate = getGlobalRate();
-            const record = monthData[day] || { status: 'absent', inTime: '08:30', outTime: '17:00', rate: defaultRate, advance: 0, remark: '' };
+            const rec = monthData[day] || { status: 'absent', inTime: '08:30', outTime: '17:00', rate: defaultRate, advance: 0, remark: '', leaveReq: false };
+            
+            const alertBox = document.getElementById('leaveAlertBox');
+            if (rec.leaveReq) {
+                alertBox.innerText = `Sitter Requested Leave/Half Day for Day ${day}! Note: ${rec.remark}`;
+                alertBox.classList.remove('hidden');
+            } else alertBox.classList.add('hidden');
 
-            const dayStr = String(day).padStart(2, '0');
-            const monthStr = String(month).padStart(2, '0');
-            const isoDateKey = `${year}-${monthStr}-${dayStr}`;
-            const holidayName = sriLankaHolidays[isoDateKey] || null;
-
-            const banner = document.getElementById('holidayBanner');
-            if (holidayName) {
-                document.getElementById('holidayBannerText').innerText = `Sri Lankan Holiday: ${holidayName}`;
-                banner.classList.remove('hidden');
-            } else {
-                banner.classList.add('hidden');
-            }
-
-            const dateObj = new Date(year, month - 1, day);
-            document.getElementById('modalDateTitle').innerText = `${dateObj.toLocaleDateString('en-US', { month: 'long' })} ${day}, ${year}`;
-
-            if (currentUserRole === 'sitter') {
-                document.getElementById('modalFinancialGroup').classList.add('hidden');
-                document.getElementById('btnStatusPresent').disabled = true;
-                document.getElementById('btnStatusHalf').disabled = true;
-                document.getElementById('btnStatusAbsent').disabled = true;
-                document.getElementById('modalInTime').disabled = true;
-                document.getElementById('modalOutTime').disabled = true;
-                document.getElementById('modalRemarkLabel').innerText = "Submit Leave Request / Remark Note";
-            } else {
-                document.getElementById('modalFinancialGroup').classList.remove('hidden');
-                document.getElementById('btnStatusPresent').disabled = false;
-                document.getElementById('btnStatusHalf').disabled = false;
-                document.getElementById('btnStatusAbsent').disabled = false;
-                document.getElementById('modalInTime').disabled = false;
-                document.getElementById('modalOutTime').disabled = false;
-                document.getElementById('modalRemarkLabel').innerText = "Remarks / Note";
-            }
-
-            setModalStatus(record.status || 'absent');
-            document.getElementById('modalInTime').value = record.inTime || '08:30';
-            document.getElementById('modalOutTime').value = record.outTime || '17:00';
-            document.getElementById('modalRate').value = record.rate || defaultRate;
-            document.getElementById('modalAdvance').value = record.advance || '';
-            document.getElementById('modalRemark').value = record.remark || '';
-
-            const modal = document.getElementById('dayModal');
-            const card = document.getElementById('dayModalCard');
-            modal.classList.remove('hidden');
-            setTimeout(() => { card.classList.remove('scale-95', 'opacity-0'); card.classList.add('scale-100', 'opacity-100'); }, 10);
+            setModalStatus(rec.status || 'absent');
+            document.getElementById('modalInTime').value = rec.inTime || '08:30';
+            document.getElementById('modalOutTime').value = rec.outTime || '17:00';
+            document.getElementById('modalRate').value = rec.rate || defaultRate;
+            document.getElementById('modalAdvance').value = rec.advance || '';
+            document.getElementById('modalRemark').value = rec.remark || '';
+            document.getElementById('dayModal').classList.remove('hidden');
         }
 
-        function closeModal() {
-            const modal = document.getElementById('dayModal');
-            const card = document.getElementById('dayModalCard');
-            card.classList.remove('scale-100', 'opacity-100');
-            card.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => { modal.classList.add('hidden'); }, 200);
+        function closeModal() { document.getElementById('dayModal').classList.add('hidden'); }
+
+        function setModalStatus(s) {
+            selectedStatus = s;
+            ['Present', 'Half', 'Absent'].forEach(b => document.getElementById(`btnStatus${b}`).className = 'py-2 rounded-xl border text-xs font-bold bg-white text-slate-600');
+            if (s === 'present') document.getElementById('btnStatusPresent').className = 'py-2 rounded-xl border text-xs font-bold bg-emerald-500 text-white';
+            else if (s === 'halfday') document.getElementById('btnStatusHalf').className = 'py-2 rounded-xl border text-xs font-bold bg-amber-500 text-white';
+            else document.getElementById('btnStatusAbsent').className = 'py-2 rounded-xl border text-xs font-bold bg-slate-700 text-white';
         }
 
-        function setModalStatus(status) {
-            selectedStatus = status;
-            ['Present', 'Half', 'Absent'].forEach(s => {
-                document.getElementById(`btnStatus${s}`).className = 'py-2.5 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 border-slate-200 text-slate-600 bg-white';
-            });
-
-            if (status === 'present') document.getElementById('btnStatusPresent').className = 'py-2.5 rounded-xl border font-bold text-xs flex flex-col items-center gap-1 border-emerald-500 bg-emerald-500 text-white';
-            else if (status === 'halfday') document.getElementById('btnStatusHalf').className = 'py-2.5 rounded-xl border font-bold text-xs flex flex-col items-center gap-1 border-amber-500 bg-amber-500 text-white';
-            else document.getElementById('btnStatusAbsent').className = 'py-2.5 rounded-xl border font-bold text-xs flex flex-col items-center gap-1 border-slate-600 bg-slate-700 text-white';
-        }
-
-        function saveDayDetails() {
-            if (!activeDayNum) return;
+        async function saveDayDetails() {
             const monthVal = document.getElementById('monthPicker').value;
-            const monthData = loadMonthData(monthVal);
-            const remarkText = document.getElementById('modalRemark').value.trim();
-
             monthData[activeDayNum] = {
                 status: selectedStatus,
                 inTime: document.getElementById('modalInTime').value,
                 outTime: document.getElementById('modalOutTime').value,
                 rate: parseFloat(document.getElementById('modalRate').value) || getGlobalRate(),
                 advance: parseFloat(document.getElementById('modalAdvance').value) || 0,
-                remark: remarkText
+                remark: document.getElementById('modalRemark').value,
+                leaveReq: false
             };
-
-            saveMonthData(monthVal, monthData);
-            logActivity(`Updated day ${activeDayNum} (${selectedStatus}) - Note: ${remarkText || 'N/A'}`);
-
-            if (currentUserRole === 'sitter' && remarkText !== '') {
-                sendWhatsAppAlert(`*Baby Sitter Leave Request/Remark*\nDate: ${monthVal}-${activeDayNum}\nRemark: ${remarkText}`);
+            if (FIREBASE_DB_URL && !FIREBASE_DB_URL.includes("YOUR_FIREBASE")) {
+                await fetch(`${FIREBASE_DB_URL}/data_${monthVal}/${activeDayNum}.json`, { method: 'PUT', body: JSON.stringify(monthData[activeDayNum]) });
             }
-
             closeModal();
             renderCalendar();
         }
-
-        function openProfileModal() {
-            const bio = JSON.parse(localStorage.getItem('babysitter_bio') || '{}');
-            document.getElementById('bioFullName').value = bio.name || '';
-            document.getElementById('bioLocation').value = bio.location || '';
-            document.getElementById('bioBank').value = bio.bank || '';
-            document.getElementById('bioPhoto').value = bio.photo || '';
-            document.getElementById('bioNIC').value = bio.nic || '';
-            document.getElementById('profileModal').classList.remove('hidden');
-        }
-
-        function saveSitterBioData() {
-            const bioData = {
-                name: document.getElementById('bioFullName').value.trim(),
-                location: document.getElementById('bioLocation').value.trim(),
-                bank: document.getElementById('bioBank').value.trim(),
-                photo: document.getElementById('bioPhoto').value.trim(),
-                nic: document.getElementById('bioNIC').value.trim()
-            };
-
-            localStorage.setItem('babysitter_bio', JSON.stringify(bioData));
-            logActivity(`Sitter bio updated: ${bioData.name}`);
-            loadBioData();
-
-            sendWhatsAppAlert(`*Baby Sitter Bio-Data Updated*\nName: ${bioData.name}\nLocation: ${bioData.location}\nBank: ${bioData.bank}\nNIC Copy: ${bioData.nic}`);
-            document.getElementById('profileModal').classList.add('hidden');
-        }
-
-        function loadBioData() {
-            const bio = JSON.parse(localStorage.getItem('babysitter_bio') || '{}');
-            if (bio.name) document.getElementById('sitterProfileName').innerText = bio.name;
-            if (bio.location) document.getElementById('sitterProfileLocation').innerHTML = `<i class="fa-solid fa-location-dot text-rose-500 mr-1"></i> ${bio.location}`;
-            if (bio.bank) document.getElementById('sitterProfileBank').innerHTML = `<i class="fa-solid fa-building-columns text-indigo-500 mr-1"></i> ${bio.bank}`;
-            if (bio.photo) document.getElementById('sitterAvatarImg').src = bio.photo;
-        }
-
-        function sendWhatsAppAlert(message) {
-            window.open(`https://wa.me/${MALITH_PHONE}?text=${encodeURIComponent(message)}`, '_blank');
-        }
-
-        function exportCSV() {
-            const monthVal = document.getElementById('monthPicker').value;
-            const monthData = loadMonthData(monthVal);
-            const [year, month] = monthVal.split('-').map(Number);
-            const daysInMonth = new Date(year, month, 0).getDate();
-            const defaultRate = getGlobalRate();
-
-            let csvRows = ['Date,Day,Holiday,Status,In Time,Out Time,Rate (LKR),Advance (LKR),Earned (LKR),Remark'];
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dayStr = String(day).padStart(2, '0');
-                const monthStr = String(month).padStart(2, '0');
-                const isoDateKey = `${year}-${monthStr}-${dayStr}`;
-                const holidayName = sriLankaHolidays[isoDateKey] || '';
-                const rec = monthData[day] || { status: 'absent', inTime: '', outTime: '', rate: defaultRate, advance: 0, remark: '' };
-
-                let earned = rec.status === 'present' ? (rec.rate || defaultRate) : (rec.status === 'halfday' ? (rec.rate || defaultRate) / 2 : 0);
-
-                csvRows.push([
-                    isoDateKey,
-                    new Date(year, month - 1, day).toLocaleDateString('en-US', { weekday: 'short' }),
-                    `"${holidayName}"`,
-                    rec.status,
-                    rec.inTime || '',
-                    rec.outTime || '',
-                    rec.rate || defaultRate,
-                    rec.advance || 0,
-                    earned,
-                    `"${(rec.remark || '').replace(/"/g, '""')}"`
-                ].join(','));
-            }
-
-            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `Attendance_${monthVal}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // System Initialization & URL Parameter Check
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const roleParam = urlParams.get('role');
-
-            if (roleParam === 'sitter') {
-                currentUserRole = 'sitter';
-                isUrlLockedRole = true;
-                // URL එකෙනම් ආවෙ Sitter ට Role මාරු කරන්න බැරි වෙන ලෙස Button එක සඟවයි
-                document.getElementById('roleBadgeBtn').classList.add('hidden');
-            } else {
-                currentUserRole = 'parent';
-                isUrlLockedRole = false;
-            }
-
-            loadBioData();
-            updateNotificationCount();
-            applyRoleView();
-        };
     </script>
 </body>
 </html>
