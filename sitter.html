@@ -7,9 +7,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    .bg-holiday { background-color: #FEF08A !important; }
-    .bg-leave { background-color: #FCA5A5 !important; }
-    .bg-approved { background-color: #BBF7D0 !important; }
+    .bg-holiday { background-color: #FEF08A !important; border-color: #FDE047 !important; }
+    .bg-leave { background-color: #FCA5A5 !important; border-color: #F87171 !important; }
+    .bg-approved { background-color: #BBF7D0 !important; border-color: #86EFAC !important; }
+    .bg-halfday { background-color: #FED7AA !important; border-color: #FDBA74 !important; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
@@ -24,6 +25,36 @@
   </nav>
 
   <main class="max-w-4xl mx-auto p-6 flex-grow w-full space-y-6">
+
+    <!-- Summary Cards (View Only for Sitter) -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs text-gray-500 font-semibold uppercase">Worked Days</p>
+          <p id="sitterWorkedDays" class="text-xl font-bold text-gray-800">0 Days</p>
+          <p id="sitterWorkedSub" class="text-[11px] text-gray-500 mt-0.5">0 Full | 0 Half</p>
+        </div>
+        <div class="bg-blue-50 text-blue-500 p-3 rounded-lg"><i class="fa-solid fa-calendar-check text-lg"></i></div>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs text-gray-500 font-semibold uppercase font-bold">Total Salary Earned</p>
+          <p id="sitterEarned" class="text-xl font-bold text-green-600">LKR 0</p>
+          <p class="text-[11px] text-gray-500 mt-0.5">Calculated by Admin</p>
+        </div>
+        <div class="bg-green-50 text-green-500 p-3 rounded-lg"><i class="fa-solid fa-wallet text-lg"></i></div>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs text-gray-500 font-semibold uppercase">Total Advances Taken</p>
+          <p id="sitterAdvances" class="text-xl font-bold text-rose-500">LKR 0</p>
+          <p class="text-[11px] text-gray-500 mt-0.5">Partials / Advances</p>
+        </div>
+        <div class="bg-rose-50 text-rose-500 p-3 rounded-lg"><i class="fa-solid fa-hand-holding-dollar text-lg"></i></div>
+      </div>
+    </div>
 
     <!-- Sitter Bio Registration Form -->
     <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
@@ -96,9 +127,17 @@
       </div>
     </div>
 
-    <!-- Calendar View -->
+    <!-- Calendar View (Read-Only for Timings & Earnings) -->
     <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
-      <h2 class="font-bold text-gray-700">Monthly Calendar & Status</h2>
+      <div class="flex justify-between items-center">
+        <h2 class="font-bold text-gray-700">Monthly Calendar & Status</h2>
+        <div class="flex flex-wrap items-center gap-3 text-xs font-semibold">
+          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-approved rounded-full"></span> Present</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-halfday rounded-full"></span> Half Day</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-leave rounded-full"></span> Requested</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 bg-holiday rounded-full"></span> Holiday</span>
+        </div>
+      </div>
       <div id="sitterCalendar" class="grid grid-cols-7 gap-2 text-center text-sm font-semibold text-gray-600">
         <!-- Dynamic Calendar -->
       </div>
@@ -187,7 +226,7 @@
         }
       } catch(e) {}
 
-      // Load Calendar
+      // Load Calendar Records
       try {
         const attRes = await fetch(`${FIREBASE_DB_URL}records/${selectedMonth}.json`);
         const data = await attRes.json() || {};
@@ -204,8 +243,14 @@
       const [year, month] = monthStr.split("-").map(Number);
       const firstDay = new Date(year, month - 1, 1).getDay();
       const totalDays = new Date(year, month, 0).getDate();
+      const defaultRate = 1300;
 
       for (let i = 0; i < firstDay; i++) container.innerHTML += `<div></div>`;
+
+      let fullDaysCount = 0;
+      let halfDaysCount = 0;
+      let totalGrossEarned = 0;
+      let totalAdvances = 0;
 
       for (let d = 1; d <= totalDays; d++) {
         const dateKey = `${monthStr}-${String(d).padStart(2, '0')}`;
@@ -213,28 +258,54 @@
         const dayRecord = records[dateKey] || {};
 
         let bgClass = "bg-white border-gray-200";
-        let statusText = "";
+        let statusBadge = "";
+        let dayEarnings = 0;
 
-        if (holidayName) {
-          bgClass = "bg-holiday border-yellow-300";
-          statusText = `<span class="text-[10px] font-bold block text-yellow-800">${holidayName}</span>`;
-        }
-
-        if (dayRecord.status === "requested") {
-          bgClass = "bg-leave border-red-300";
-          statusText += `<span class="text-[10px] text-red-700 font-bold block">Leave Requested</span>`;
-        } else if (dayRecord.status === "approved") {
+        if (dayRecord.status === "present" || dayRecord.status === "approved") {
+          fullDaysCount++;
+          dayEarnings = parseFloat(dayRecord.rate) || defaultRate;
           bgClass = "bg-approved border-green-300";
-          statusText += `<span class="text-[10px] text-green-800 font-bold block">Approved</span>`;
+          statusBadge = `<span class="text-[10px] bg-green-200 text-green-800 font-bold px-1.5 py-0.5 rounded">Present</span>`;
+        } else if (dayRecord.status === "halfday") {
+          halfDaysCount++;
+          dayEarnings = (parseFloat(dayRecord.rate) || defaultRate) / 2;
+          bgClass = "bg-halfday border-orange-300";
+          statusBadge = `<span class="text-[10px] bg-orange-200 text-orange-800 font-bold px-1.5 py-0.5 rounded">Half Day</span>`;
+        } else if (dayRecord.status === "requested") {
+          bgClass = "bg-leave border-red-300";
+          statusBadge = `<span class="text-[10px] bg-red-200 text-red-800 font-bold px-1.5 py-0.5 rounded">Requested</span>`;
+        } else if (holidayName) {
+          bgClass = "bg-holiday border-yellow-300";
         }
+
+        const dayAdv = parseFloat(dayRecord.advance) || 0;
+        totalGrossEarned += dayEarnings;
+        totalAdvances += dayAdv;
 
         container.innerHTML += `
-          <div class="p-2 min-h-[60px] border rounded-lg flex flex-col justify-between ${bgClass}">
-            <div class="text-left font-bold text-xs">${d}</div>
-            <div>${statusText}</div>
+          <div class="p-2 min-h-[85px] border rounded-lg flex flex-col justify-between ${bgClass}">
+            <div>
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-xs">${d}</span>
+                ${statusBadge}
+              </div>
+              ${holidayName ? `<span class="text-[9px] font-bold text-yellow-900 block truncate mt-1">${holidayName}</span>` : ''}
+              ${(dayRecord.inTime || dayRecord.outTime) ? `<div class="text-[9px] text-gray-600 font-semibold mt-1"><i class="fa-regular fa-clock"></i> ${dayRecord.inTime || '--:--'} - ${dayRecord.outTime || '--:--'}</div>` : ''}
+              ${dayRecord.remark ? `<div class="text-[9px] text-gray-500 italic truncate mt-0.5">${dayRecord.remark}</div>` : ''}
+            </div>
+            <div class="flex justify-between items-center text-[10px] border-t pt-1 border-gray-200/60 mt-1 font-bold">
+              <span class="text-green-700">${dayEarnings > 0 ? 'LKR ' + dayEarnings.toLocaleString() : ''}</span>
+              ${dayAdv > 0 ? `<span class="text-rose-600 bg-rose-50 px-1 rounded">Adv: ${dayAdv}</span>` : ''}
+            </div>
           </div>
         `;
       }
+
+      const totalWorkedDays = fullDaysCount + (halfDaysCount * 0.5);
+      document.getElementById("sitterWorkedDays").innerText = `${totalWorkedDays} Days`;
+      document.getElementById("sitterWorkedSub").innerText = `${fullDaysCount} Full | ${halfDaysCount} Half`;
+      document.getElementById("sitterEarned").innerText = `LKR ${totalGrossEarned.toLocaleString()}`;
+      document.getElementById("sitterAdvances").innerText = `LKR ${totalAdvances.toLocaleString()}`;
     }
 
     async function requestLeave() {
