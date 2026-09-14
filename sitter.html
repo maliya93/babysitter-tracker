@@ -1,244 +1,264 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baby Sitter Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
-                    colors: { brand: { 50: '#f0f3ff', 500: '#6366f1', 600: '#4f46e5' } }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { background-color: #f8fafc; color: #1e293b; font-family: 'Plus Jakarta Sans', sans-serif; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
-        .day-cell { min-height: 100px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Baby Sitter Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .bg-holiday { background-color: #FEF08A !important; }
+    .bg-leave { background-color: #FCA5A5 !important; }
+    .bg-approved { background-color: #BBF7D0 !important; }
+  </style>
 </head>
-<body class="min-h-screen pb-12">
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
 
-    <!-- Header -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold text-xl"><i class="fa-solid fa-baby-carriage"></i></div>
-                <div>
-                    <h1 class="text-lg font-bold text-slate-800">Baby Sitter Portal</h1>
-                    <p class="text-xs text-slate-500">View attendance & send requests</p>
-                </div>
-            </div>
-            <input type="month" id="monthPicker" value="2026-09" onchange="fetchRealtimeData()" class="border p-1.5 rounded-xl text-xs font-bold text-slate-700 outline-none">
+  <!-- Navigation Bar (Pastel Pink Theme) -->
+  <nav class="bg-pink-100 border-b border-pink-200 px-6 py-4 flex justify-between items-center shadow-sm">
+    <div class="flex items-center space-x-3">
+      <div class="bg-pink-400 text-white p-2 rounded-lg"><i class="fa-solid fa-heart text-xl"></i></div>
+      <h1 class="text-xl font-bold text-gray-800">Baby Sitter Portal</h1>
+    </div>
+    <input type="month" id="sitterMonthPicker" class="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm" onchange="loadSitterData()">
+  </nav>
+
+  <main class="max-w-4xl mx-auto p-6 flex-grow w-full space-y-6">
+
+    <!-- Sitter Bio Registration Form -->
+    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
+      <h2 class="font-bold text-gray-700 border-b pb-2 flex items-center">
+        <i class="fa-solid fa-user-pen text-pink-500 mr-2"></i> My Personal & Bank Details (Bio-Data)
+      </h2>
+      <form id="bioForm" onsubmit="saveBioData(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
+          <input type="text" id="bioFullName" placeholder="Ex: J.K. Nirosha Dias" required class="w-full border rounded p-2 text-sm">
         </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto px-4 pt-6 space-y-6">
-
-        <!-- Sitter Bio Profile Card -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-4">
-                <img id="sitterAvatar" src="https://via.placeholder.com/150" class="w-16 h-16 rounded-2xl object-cover border-2 border-brand-500">
-                <div>
-                    <h3 id="sitterBioName" class="font-bold text-slate-800">My Profile</h3>
-                    <p id="sitterBioBank" class="text-xs text-slate-500">Bank Info: Not Uploaded</p>
-                </div>
-            </div>
-            <button onclick="document.getElementById('bioUploadModal').classList.remove('hidden')" class="px-4 py-2.5 bg-brand-600 text-white text-xs font-bold rounded-xl shadow-md"><i class="fa-solid fa-upload mr-1"></i> Upload Profile & NIC</button>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Phone Number</label>
+          <input type="tel" id="bioPhone" placeholder="Ex: 0771234567" required class="w-full border rounded p-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">NIC Number</label>
+          <input type="text" id="bioNic" placeholder="Ex: 199084700123 / 908470123V" required class="w-full border rounded p-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Emergency Contact</label>
+          <input type="tel" id="bioEmergency" placeholder="Ex: 0719876543" required class="w-full border rounded p-2 text-sm">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Residential Address</label>
+          <input type="text" id="bioAddress" placeholder="Ex: No 12, Main Street, Badulla" required class="w-full border rounded p-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Bank Name & Branch</label>
+          <input type="text" id="bioBank" placeholder="Ex: Bank of Ceylon - Badulla" required class="w-full border rounded p-2 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Account Number</label>
+          <input type="text" id="bioAcc" placeholder="Ex: 0008472910" required class="w-full border rounded p-2 text-sm">
         </div>
 
-        <!-- Earned Summary -->
-        <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl flex justify-between items-center">
-            <div>
-                <span class="text-xs text-emerald-600 font-bold uppercase tracking-wider block">Total Net Salary Earned</span>
-                <span id="sitterNetEarned" class="text-2xl font-extrabold text-emerald-700">LKR 0</span>
-            </div>
-            <i class="fa-solid fa-wallet text-emerald-500 text-3xl"></i>
+        <!-- File Uploads (Base64 Web API) -->
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">Profile Photo</label>
+          <input type="file" id="fileProfile" accept="image/*" class="w-full text-xs">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">NIC Front Photo</label>
+          <input type="file" id="fileNicFront" accept="image/*" class="w-full text-xs">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1">NIC Back Photo</label>
+          <input type="file" id="fileNicBack" accept="image/*" class="w-full text-xs">
         </div>
 
-        <!-- Calendar -->
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-            <div class="calendar-grid bg-slate-100 border-b text-center text-xs font-bold text-slate-500 uppercase py-2">
-                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-            </div>
-            <div id="calendarGrid" class="calendar-grid bg-slate-200 gap-px"></div>
+        <div class="md:col-span-2 text-right">
+          <button type="submit" class="bg-pink-500 hover:bg-pink-600 text-white font-bold px-5 py-2 rounded-lg text-sm transition">
+            Save & Sync Bio Data
+          </button>
         </div>
-    </main>
-
-    <!-- Request Modal -->
-    <div id="sitterReqModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4">
-            <div class="flex justify-between border-b pb-2">
-                <h3 id="reqModalDateTitle" class="font-bold text-slate-800">Send Leave / Half Day Request</h3>
-                <button onclick="closeReqModal()" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border">
-                <span class="text-xs font-bold text-slate-700">Request Leave / Half Day?</span>
-                <input type="checkbox" id="reqToggle" class="w-5 h-5 accent-brand-600 cursor-pointer">
-            </div>
-            <div>
-                <label class="text-xs font-semibold text-slate-600 block mb-1">Reason / Note</label>
-                <input type="text" id="reqRemark" placeholder="e.g. Taking half day for doctor visit" class="w-full p-2 border rounded-xl text-sm">
-            </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button onclick="closeReqModal()" class="px-4 py-2 border rounded-xl text-xs">Cancel</button>
-                <button onclick="saveSitterRequest()" class="px-4 py-2 bg-brand-600 text-white font-bold rounded-xl text-xs">Submit & Send WhatsApp</button>
-            </div>
-        </div>
+      </form>
     </div>
 
-    <!-- Direct Upload Modal -->
-    <div id="bioUploadModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between border-b pb-2">
-                <h3 class="font-bold text-slate-800">Update Profile & NIC Copies</h3>
-                <button onclick="document.getElementById('bioUploadModal').classList.add('hidden')" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="space-y-3 text-xs">
-                <div><label class="font-bold block mb-1">Full Name</label><input type="text" id="upName" class="w-full p-2 border rounded-xl"></div>
-                <div><label class="font-bold block mb-1">Address</label><input type="text" id="upLoc" class="w-full p-2 border rounded-xl"></div>
-                <div><label class="font-bold block mb-1">Bank Account Info</label><input type="text" id="upBank" class="w-full p-2 border rounded-xl"></div>
-                <div><label class="font-bold block mb-1">Profile Photo (Direct File)</label><input type="file" id="upPhotoFile" accept="image/*" class="w-full p-1 border rounded-xl"></div>
-                <div><label class="font-bold block mb-1">NIC Front Copy (Direct File)</label><input type="file" id="upNicFrontFile" accept="image/*" class="w-full p-1 border rounded-xl"></div>
-                <div><label class="font-bold block mb-1">NIC Back Copy (Direct File)</label><input type="file" id="upNicBackFile" accept="image/*" class="w-full p-1 border rounded-xl"></div>
-            </div>
-            <div class="flex justify-end gap-2 pt-2 border-t">
-                <button onclick="document.getElementById('bioUploadModal').classList.add('hidden')" class="px-4 py-2 border rounded-xl">Cancel</button>
-                <button onclick="saveSitterBioData()" class="px-4 py-2 bg-brand-600 text-white font-bold rounded-xl">Save & Send Alerts</button>
-            </div>
-        </div>
+    <!-- Leave Request Box -->
+    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-3">
+      <h2 class="font-bold text-gray-700 flex items-center">
+        <i class="fa-solid fa-envelope-open-text text-pink-500 mr-2"></i> Request Leave / Off Day
+      </h2>
+      <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+        <input type="date" id="leaveDate" class="border rounded p-2 text-sm flex-grow">
+        <input type="text" id="leaveReason" placeholder="Reason for leave" class="border rounded p-2 text-sm flex-grow">
+        <button onclick="requestLeave()" class="bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded text-sm transition">
+          Request & Send WhatsApp
+        </button>
+      </div>
     </div>
 
-    <script>
-        // FIREBASE DATABASE LINK
-        const FIREBASE_DB_URL = "https://babysitter-tracker-7ce0e-default-rtdb.firebaseio.com/"; // <--- PASTE YOUR FIREBASE URL HERE
+    <!-- Calendar View -->
+    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
+      <h2 class="font-bold text-gray-700">Monthly Calendar & Status</h2>
+      <div id="sitterCalendar" class="grid grid-cols-7 gap-2 text-center text-sm font-semibold text-gray-600">
+        <!-- Dynamic Calendar -->
+      </div>
+    </div>
 
-        const MALITH_NUM = "94787365590";
-        const SHYAMINI_NUM = "0769192553";
-        let activeDayNum = null, monthData = {}, sitterBio = {};
+  </main>
 
-        window.onload = function() { fetchRealtimeData(); };
+  <footer class="bg-white border-t border-gray-200 py-4 text-center text-xs text-gray-500">
+    Baby Sitter Attendance Portal &copy; 2026
+  </footer>
 
-        async function fetchRealtimeData() {
-            if (!FIREBASE_DB_URL || FIREBASE_DB_URL.includes("YOUR_FIREBASE")) return renderCalendar();
-            const monthVal = document.getElementById('monthPicker').value;
-            try {
-                const resData = await fetch(`${FIREBASE_DB_URL}/data_${monthVal}.json`).then(r => r.json());
-                const resBio = await fetch(`${FIREBASE_DB_URL}/sitter_bio.json`).then(r => r.json());
-                monthData = resData || {};
-                sitterBio = resBio || {};
-                if (sitterBio.name) document.getElementById('sitterBioName').innerText = sitterBio.name;
-                if (sitterBio.bank) document.getElementById('sitterBioBank').innerText = `Bank: ${sitterBio.bank}`;
-                if (sitterBio.photo) document.getElementById('sitterAvatar').src = sitterBio.photo;
-                renderCalendar();
-            } catch(e) { console.error(e); }
+  <script>
+    const FIREBASE_DB_URL = "https://babysitter-tracker-7ce0e-default-rtdb.firebaseio.com/";
+    const DUAL_PARENTS = [
+      { name: "Malith", phone: "94787365590" },
+      { name: "Shyamini", phone: "94769192553" }
+    ];
+
+    const HOLIDAYS_2026 = {
+      "2026-01-03": "Duruthu Poya", "2026-01-15": "Tamil Thai Pongal",
+      "2026-02-01": "Navam Poya", "2026-02-04": "National Day Sri Lanka",
+      "2026-03-03": "Medin Poya", "2026-03-21": "Id-Ul-Fitr (Ramazan)",
+      "2026-04-01": "Bak Poya", "2026-04-13": "Sinhala & Tamil New Year Eve",
+      "2026-04-14": "Sinhala & Tamil New Year Day", "2026-05-01": "May Day / Vesak Poya",
+      "2026-05-31": "Poson Poya", "2026-06-29": "Esala Poya",
+      "2026-07-28": "Nikini Poya", "2026-08-26": "Binara Poya",
+      "2026-09-25": "Vap Poya", "2026-10-24": "Il Poya",
+      "2026-11-23": "Unduvap Poya", "2026-12-25": "Christmas Day"
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const today = new Date();
+      document.getElementById("sitterMonthPicker").value = today.toISOString().slice(0, 7);
+      loadSitterData();
+    });
+
+    const toBase64 = file => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+
+    async function saveBioData(e) {
+      e.preventDefault();
+      const profileFile = document.getElementById("fileProfile").files[0];
+      const nicFrontFile = document.getElementById("fileNicFront").files[0];
+      const nicBackFile = document.getElementById("fileNicBack").files[0];
+
+      const payload = {
+        fullName: document.getElementById("bioFullName").value,
+        phone: document.getElementById("bioPhone").value,
+        nicNumber: document.getElementById("bioNic").value,
+        emergencyPhone: document.getElementById("bioEmergency").value,
+        address: document.getElementById("bioAddress").value,
+        bankName: document.getElementById("bioBank").value,
+        accountNumber: document.getElementById("bioAcc").value
+      };
+
+      if(profileFile) payload.profilePic = await toBase64(profileFile);
+      if(nicFrontFile) payload.nicFront = await toBase64(nicFrontFile);
+      if(nicBackFile) payload.nicBack = await toBase64(nicBackFile);
+
+      await fetch(`${FIREBASE_DB_URL}sitter_bio.json`, {
+        method: "PATCH",
+        body: JSON.stringify(payload)
+      });
+      alert("Bio-Data details updated successfully!");
+    }
+
+    async function loadSitterData() {
+      const selectedMonth = document.getElementById("sitterMonthPicker").value;
+      
+      // Load Existing Bio
+      try {
+        const bioRes = await fetch(`${FIREBASE_DB_URL}sitter_bio.json`);
+        const bio = await bioRes.json();
+        if(bio) {
+          document.getElementById("bioFullName").value = bio.fullName || "";
+          document.getElementById("bioPhone").value = bio.phone || "";
+          document.getElementById("bioNic").value = bio.nicNumber || "";
+          document.getElementById("bioEmergency").value = bio.emergencyPhone || "";
+          document.getElementById("bioAddress").value = bio.address || "";
+          document.getElementById("bioBank").value = bio.bankName || "";
+          document.getElementById("bioAcc").value = bio.accountNumber || "";
+        }
+      } catch(e) {}
+
+      // Load Calendar
+      try {
+        const attRes = await fetch(`${FIREBASE_DB_URL}records/${selectedMonth}.json`);
+        const data = await attRes.json() || {};
+        renderSitterCalendar(selectedMonth, data);
+      } catch(e) {}
+    }
+
+    function renderSitterCalendar(monthStr, records) {
+      const container = document.getElementById("sitterCalendar");
+      container.innerHTML = "";
+      const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      days.forEach(d => container.innerHTML += `<div class="font-bold py-2 bg-gray-100 rounded">${d}</div>`);
+
+      const [year, month] = monthStr.split("-").map(Number);
+      const firstDay = new Date(year, month - 1, 1).getDay();
+      const totalDays = new Date(year, month, 0).getDate();
+
+      for (let i = 0; i < firstDay; i++) container.innerHTML += `<div></div>`;
+
+      for (let d = 1; d <= totalDays; d++) {
+        const dateKey = `${monthStr}-${String(d).padStart(2, '0')}`;
+        const holidayName = HOLIDAYS_2026[dateKey];
+        const dayRecord = records[dateKey] || {};
+
+        let bgClass = "bg-white border-gray-200";
+        let statusText = "";
+
+        if (holidayName) {
+          bgClass = "bg-holiday border-yellow-300";
+          statusText = `<span class="text-[10px] font-bold block text-yellow-800">${holidayName}</span>`;
         }
 
-        function renderCalendar() {
-            const monthVal = document.getElementById('monthPicker').value;
-            const [year, month] = monthVal.split('-').map(Number);
-            const firstDay = new Date(year, month - 1, 1).getDay();
-            const daysInMonth = new Date(year, month, 0).getDate();
-            const grid = document.getElementById('calendarGrid');
-            grid.innerHTML = '';
-            let totalEarned = 0;
-
-            for (let i = 0; i < firstDay; i++) grid.appendChild(Object.assign(document.createElement('div'), { className: 'bg-slate-50 day-cell' }));
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const rec = monthData[day] || { status: 'absent', rate: 1300, advance: 0, leaveReq: false };
-                let earned = 0;
-                if (rec.status === 'present') earned = parseFloat(rec.rate) || 1300;
-                else if (rec.status === 'halfday') earned = (parseFloat(rec.rate) || 1300) / 2;
-
-                totalEarned += (earned - (parseFloat(rec.advance) || 0));
-
-                const cell = document.createElement('div');
-                cell.className = `${rec.status === 'present' ? 'bg-emerald-50' : (rec.status === 'halfday' ? 'bg-amber-50' : 'bg-white')} p-2 day-cell flex flex-col justify-between cursor-pointer border-r border-b border-slate-100`;
-                cell.onclick = () => openReqModal(day);
-                cell.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${rec.status !== 'absent' ? 'bg-slate-800 text-white' : 'text-slate-700 bg-slate-100'}">${day}</span>
-                        ${rec.leaveReq ? `<span class="bg-rose-500 text-white text-[9px] px-1 font-bold rounded">Requested</span>` : ''}
-                    </div>
-                    ${rec.status !== 'absent' ? `<div class="text-[10px] text-slate-600 font-semibold mt-1"><i class="fa-regular fa-clock text-[9px]"></i> ${rec.inTime || '--'} - ${rec.outTime || '--'}</div>` : ''}
-                    <div class="text-[10px] font-bold text-emerald-700 mt-2">${earned > 0 ? 'LKR ' + earned.toLocaleString() : ''}</div>
-                `;
-                grid.appendChild(cell);
-            }
-            document.getElementById('sitterNetEarned').innerText = 'LKR ' + (totalEarned > 0 ? totalEarned : 0).toLocaleString();
+        if (dayRecord.status === "requested") {
+          bgClass = "bg-leave border-red-300";
+          statusText += `<span class="text-[10px] text-red-700 font-bold block">Leave Requested</span>`;
+        } else if (dayRecord.status === "approved") {
+          bgClass = "bg-approved border-green-300";
+          statusText += `<span class="text-[10px] text-green-800 font-bold block">Approved</span>`;
         }
 
-        function openReqModal(day) {
-            activeDayNum = day;
-            const rec = monthData[day] || { remark: '', leaveReq: false };
-            document.getElementById('reqModalDateTitle').innerText = `Request Day ${day}`;
-            document.getElementById('reqToggle').checked = rec.leaveReq || false;
-            document.getElementById('reqRemark').value = rec.remark || '';
-            document.getElementById('sitterReqModal').classList.remove('hidden');
-        }
+        container.innerHTML += `
+          <div class="p-2 min-h-[60px] border rounded-lg flex flex-col justify-between ${bgClass}">
+            <div class="text-left font-bold text-xs">${d}</div>
+            <div>${statusText}</div>
+          </div>
+        `;
+      }
+    }
 
-        function closeReqModal() { document.getElementById('sitterReqModal').classList.add('hidden'); }
+    async function requestLeave() {
+      const date = document.getElementById("leaveDate").value;
+      const reason = document.getElementById("leaveReason").value;
+      if(!date) return alert("Please select a date!");
 
-        async function saveSitterRequest() {
-            const monthVal = document.getElementById('monthPicker').value;
-            const rec = monthData[activeDayNum] || { status: 'absent', rate: 1300, advance: 0 };
-            rec.leaveReq = document.getElementById('reqToggle').checked;
-            rec.remark = document.getElementById('reqRemark').value;
+      const monthStr = date.slice(0, 7);
+      await fetch(`${FIREBASE_DB_URL}records/${monthStr}/${date}.json`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: "requested", reason: reason })
+      });
 
-            monthData[activeDayNum] = rec;
-            if (FIREBASE_DB_URL && !FIREBASE_DB_URL.includes("YOUR_FIREBASE")) {
-                await fetch(`${FIREBASE_DB_URL}/data_${monthVal}/${activeDayNum}.json`, { method: 'PUT', body: JSON.stringify(rec) });
-            }
+      // Send WhatsApp Dual Alert (Malith & Shyamini)
+      const msg = encodeURIComponent(`Hello Parent, Leave Request for ${date}. Reason: ${reason || 'N/A'}`);
+      
+      DUAL_PARENTS.forEach((parent, index) => {
+        setTimeout(() => {
+          window.open(`https://api.whatsapp.com/send?phone=${parent.phone}&text=${msg}`, '_blank');
+        }, index * 1000);
+      });
 
-            const alertMsg = `*Baby Sitter Leave Request*\nDate: ${monthVal}-${activeDayNum}\nRequest Active: ${rec.leaveReq ? 'YES' : 'NO'}\nNote: ${rec.remark}`;
-            sendDualWhatsAppAlerts(alertMsg);
-            closeReqModal();
-            renderCalendar();
-        }
-
-        function fileToBase64(file) {
-            return new Promise((resolve) => {
-                if (!file) resolve(null);
-                const r = new FileReader();
-                r.onload = () => resolve(r.result);
-                r.readAsDataURL(file);
-            });
-        }
-
-        async function saveSitterBioData() {
-            const photoFile = document.getElementById('upPhotoFile').files[0];
-            const nicFrontFile = document.getElementById('upNicFrontFile').files[0];
-            const nicBackFile = document.getElementById('upNicBackFile').files[0];
-
-            if (photoFile) sitterBio.photo = await fileToBase64(photoFile);
-            if (nicFrontFile) sitterBio.nicFront = await fileToBase64(nicFrontFile);
-            if (nicBackFile) sitterBio.nicBack = await fileToBase64(nicBackFile);
-
-            sitterBio.name = document.getElementById('upName').value || sitterBio.name;
-            sitterBio.location = document.getElementById('upLoc').value || sitterBio.location;
-            sitterBio.bank = document.getElementById('upBank').value || sitterBio.bank;
-
-            if (FIREBASE_DB_URL && !FIREBASE_DB_URL.includes("YOUR_FIREBASE")) {
-                await fetch(`${FIREBASE_DB_URL}/sitter_bio.json`, { method: 'PUT', body: JSON.stringify(sitterBio) });
-            }
-
-            const alertMsg = `*Baby Sitter Bio-Data Updated*\nName: ${sitterBio.name}\nLocation: ${sitterBio.location}\nBank: ${sitterBio.bank}`;
-            sendDualWhatsAppAlerts(alertMsg);
-            document.getElementById('bioUploadModal').classList.add('hidden');
-            fetchRealtimeData();
-        }
-
-        function sendDualWhatsAppAlerts(msg) {
-            window.open(`https://wa.me/${MALITH_NUM}?text=${encodeURIComponent(msg)}`, '_blank');
-            setTimeout(() => { window.open(`https://wa.me/${SHYAMINI_NUM}?text=${encodeURIComponent(msg)}`, '_blank'); }, 1000);
-        }
-    </script>
+      loadSitterData();
+    }
+  </script>
 </body>
 </html>
