@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Sitter Attendance & Salary Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --border: #e2e8f0;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+        }
+
+        .month-picker {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--card-bg);
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .month-picker input {
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .stat-card .label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .table-container {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            min-width: 900px;
+        }
+
+        th {
+            background: #f1f5f9;
+            padding: 14px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        input, select {
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 0.85rem;
+            outline: none;
+            width: 100%;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-present { background: var(--success-light); color: var(--success); }
+        .status-absent { background: var(--danger-light); color: var(--danger); }
+        .status-half { background: var(--warning-light); color: var(--warning); }
+
+        .btn-export {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-export:hover {
+            opacity: 0.9;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            .header h1 { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div>
+            <h1>Baby Sitter Attendance & Salary</h1>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Track daily attendance, times, and payout balance</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <div class="month-picker">
+                <input type="month" id="monthSelect" value="2026-09" onchange="renderTable()">
+            </div>
+            <button class="btn-export" onclick="exportCSV()">Export CSV</button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="label">Worked Days</div>
+            <div class="value" id="statDays">0 Days</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Total Earned</div>
+            <div class="value" style="color: var(--primary);" id="statTotal">Rs. 0</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Advances Taken</div>
+            <div class="value" style="color: var(--danger);" id="statAdvance">Rs. 0</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Balance Payable</div>
+            <div class="value" style="color: var(--success);" id="statBalance">Rs. 0</div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 120px;">Date</th>
+                    <th style="width: 130px;">Status</th>
+                    <th style="width: 110px;">In Time</th>
+                    <th style="width: 110px;">Out Time</th>
+                    <th style="width: 110px;">Rate (LKR)</th>
+                    <th style="width: 110px;">Advance (LKR)</th>
+                    <th>Remark</th>
+                </tr>
+            </thead>
+            <tbody id="attendanceBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const DEFAULT_RATE = 1300;
+
+        function getStorageKey(monthStr) {
+            return `babysitter_data_${monthStr}`;
+        }
+
+        function loadMonthData(monthStr) {
+            const saved = localStorage.getItem(getStorageKey(monthStr));
+            return saved ? JSON.parse(saved) : {};
+        }
+
+        function saveMonthData(monthStr, data) {
+            localStorage.setItem(getStorageKey(monthStr), JSON.stringify(data));
+        }
+
+        function renderTable() {
+            const monthVal = document.getElementById('monthSelect').value;
+            const [year, month] = monthVal.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const data = loadMonthData(monthVal);
+
+            const tbody = document.getElementById('attendanceBody');
+            tbody.innerHTML = '';
+
+            let totalWorkedDays = 0;
+            let totalEarned = 0;
+            let totalAdvance = 0;
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dateObj = new Date(year, month - 1, day);
+                const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                
+                const dayData = data[day] || {
+                    status: 'absent',
+                    inTime: '',
+                    outTime: '',
+                    rate: DEFAULT_RATE,
+                    advance: 0,
+                    remark: ''
+                };
+
+                // Calculations
+                let dayEarned = 0;
+                if (dayData.status === 'present') {
+                    dayEarned = Number(dayData.rate);
+                    totalWorkedDays += 1;
+                } else if (dayData.status === 'halfday') {
+                    dayEarned = Number(dayData.rate) / 2;
+                    totalWorkedDays += 0.5;
+                }
+
+                totalEarned += dayEarned;
+                totalAdvance += Number(dayData.advance || 0);
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${day} (${dayName})</strong></td>
+                    <td>
+                        <select onchange="updateEntry(${day}, 'status', this.value)">
+                            <option value="absent" ${dayData.status === 'absent' ? 'selected' : ''}>Absent</option>
+                            <option value="present" ${dayData.status === 'present' ? 'selected' : ''}>Present</option>
+                            <option value="halfday" ${dayData.status === 'halfday' ? 'selected' : ''}>Half Day</option>
+                        </select>
+                    </td>
+                    <td><input type="time" value="${dayData.inTime}" onchange="updateEntry(${day}, 'inTime', this.value)"></td>
+                    <td><input type="time" value="${dayData.outTime}" onchange="updateEntry(${day}, 'outTime', this.value)"></td>
+                    <td><input type="number" value="${dayData.rate}" onchange="updateEntry(${day}, 'rate', this.value)"></td>
+                    <td><input type="number" value="${dayData.advance}" onchange="updateEntry(${day}, 'advance', this.value)"></td>
+                    <td><input type="text" placeholder="e.g. Late by 10m" value="${dayData.remark}" onchange="updateEntry(${day}, 'remark', this.value)"></td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            // Update stats
+            document.getElementById('statDays').innerText = `${totalWorkedDays} Days`;
+            document.getElementById('statTotal').innerText = `Rs. ${totalEarned.toLocaleString()}`;
+            document.getElementById('statAdvance').innerText = `Rs. ${totalAdvance.toLocaleString()}`;
+            document.getElementById('statBalance').innerText = `Rs. ${(totalEarned - totalAdvance).toLocaleString()}`;
+        }
+
+        function updateEntry(day, field, value) {
+            const monthVal = document.getElementById('monthSelect').value;
+            const data = loadMonthData(monthVal);
+            
+            if (!data[day]) {
+                data[day] = { status: 'absent', inTime: '', outTime: '', rate: DEFAULT_RATE, advance: 0, remark: '' };
+            }
+
+            data[day][field] = value;
+            saveMonthData(monthVal, data);
+            renderTable();
+        }
+
+        function exportCSV() {
+            const monthVal = document.getElementById('monthSelect').value;
+            const data = loadMonthData(monthVal);
+            const [year, month] = monthVal.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            let csvContent = "data:text/csv;charset=utf-8,Date,Status,In Time,Out Time,Rate,Advance,Remark\n";
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayData = data[day] || { status: 'absent', inTime: '', outTime: '', rate: DEFAULT_RATE, advance: 0, remark: '' };
+                const row = [`${year}-${month}-${day}`, dayData.status, dayData.inTime, dayData.outTime, dayData.rate, dayData.advance, `"${dayData.remark}"`].join(",");
+                csvContent += row + "\n";
+            }
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `BabySitter_Attendance_${monthVal}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Initial Load
+        renderTable();
+    </script>
+</body>
+</html>
