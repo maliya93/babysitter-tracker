@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Parents Portal - Baby Sitter Tracker</title>
+  <title>Parents Portal - Baby Sitter Attendance & Salary Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     .bg-holiday { background-color: #FEF08A !important; border-color: #FDE047 !important; }
     .bg-leave { background-color: #FCA5A5 !important; border-color: #F87171 !important; }
     .bg-approved { background-color: #BBF7D0 !important; border-color: #86EFAC !important; }
+    .bg-halfday { background-color: #FED7AA !important; border-color: #FDBA74 !important; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
@@ -30,6 +31,9 @@
         <i class="fa-solid fa-user-gear mr-1"></i> Switch Active Parent
       </button>
       <input type="month" id="adminMonthPicker" class="bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm" onchange="loadAdminData()">
+      <button onclick="exportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1">
+        <i class="fa-solid fa-file-csv"></i> Export CSV
+      </button>
     </div>
   </nav>
 
@@ -41,32 +45,79 @@
         <div>
           <p class="text-xs text-gray-500 font-semibold uppercase">Worked Days</p>
           <p id="statWorkedDays" class="text-2xl font-bold text-gray-800">0 Days</p>
+          <p id="statWorkedSub" class="text-[11px] text-gray-500 mt-0.5">0 Full | 0 Half</p>
         </div>
         <div class="bg-blue-50 text-blue-500 p-3 rounded-lg"><i class="fa-solid fa-calendar-check text-xl"></i></div>
       </div>
+
       <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
         <div>
           <p class="text-xs text-gray-500 font-semibold uppercase font-bold">Total Earned</p>
           <p id="statEarned" class="text-2xl font-bold text-green-600">LKR 0</p>
+          <p class="text-[11px] text-gray-500 mt-0.5">Rate @ LKR <span id="statDefaultRate">1,300</span>/day</p>
         </div>
         <div class="bg-green-50 text-green-500 p-3 rounded-lg"><i class="fa-solid fa-wallet text-xl"></i></div>
       </div>
+
       <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
         <div>
-          <p class="text-xs text-gray-500 font-semibold uppercase">Daily Rate</p>
-          <div class="flex items-center space-x-1 mt-1">
-            <span class="text-xs text-gray-500">LKR</span>
-            <input type="number" id="dailyRateInput" value="1300" class="w-20 border rounded px-1 text-sm font-bold" onchange="updateDailyRate()">
-          </div>
+          <p class="text-xs text-gray-500 font-semibold uppercase">Total Advances</p>
+          <p id="statTotalAdvance" class="text-2xl font-bold text-rose-500">LKR 0</p>
+          <p class="text-[11px] text-gray-500 mt-0.5">Advances / Partials taken</p>
         </div>
-        <div class="bg-purple-50 text-purple-500 p-3 rounded-lg"><i class="fa-solid fa-calculator text-xl"></i></div>
+        <div class="bg-rose-50 text-rose-500 p-3 rounded-lg"><i class="fa-solid fa-hand-holding-dollar text-xl"></i></div>
       </div>
+
       <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
         <div>
-          <p class="text-xs text-gray-500 font-semibold uppercase">Pending Requests</p>
-          <p id="statPendingLeaves" class="text-2xl font-bold text-red-500">0</p>
+          <p class="text-xs text-gray-500 font-semibold uppercase">Net Payable</p>
+          <p id="statNetBalance" class="text-2xl font-bold text-emerald-600">LKR 0</p>
+          <p id="statPendingLeavesSub" class="text-[11px] text-red-500 font-medium mt-0.5">Pending Leaves: <span id="statPendingLeaves">0</span></p>
         </div>
-        <div class="bg-red-50 text-red-500 p-3 rounded-lg"><i class="fa-solid fa-bell text-xl"></i></div>
+        <div class="bg-emerald-50 text-emerald-500 p-3 rounded-lg"><i class="fa-solid fa-money-bill-wave text-xl"></i></div>
+      </div>
+    </div>
+
+    <!-- Rate Controls & Legends -->
+    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-sliders text-pink-500 text-lg"></i>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold text-gray-700">Standard Daily Rate (LKR):</span>
+          <input type="number" id="dailyRateInput" value="1300" onchange="updateDailyRate()" class="w-24 border rounded px-2 py-1 text-sm font-bold">
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-4 text-xs font-semibold">
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-approved rounded-full"></span> Present</span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-halfday rounded-full"></span> Half Day</span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-leave rounded-full"></span> Leave Requested</span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-holiday rounded-full"></span> Holiday / Poya</span>
+      </div>
+    </div>
+
+    <!-- 50/50 Equal Split Card -->
+    <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-2xl p-6 shadow-md border border-slate-800">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/20 text-pink-300 text-xs font-semibold mb-1">
+            <i class="fa-solid fa-scale-balanced"></i> Auto 50/50 Equal Split
+          </div>
+          <h2 class="text-xl font-bold">Monthly Payment Split</h2>
+        </div>
+        <div class="bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700 flex items-center gap-3">
+          <span class="text-xs text-slate-400">Total Net Payable:</span>
+          <span id="splitTotalBalance" class="text-xl font-extrabold text-emerald-400">LKR 0</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+          <p class="text-xs text-slate-400">Malith's 50% Share</p>
+          <div id="malithAmount" class="text-2xl font-extrabold text-white mt-1">LKR 0</div>
+        </div>
+        <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+          <p class="text-xs text-slate-400">Shyamini's 50% Share</p>
+          <div id="shyaminiAmount" class="text-2xl font-extrabold text-white mt-1">LKR 0</div>
+        </div>
       </div>
     </div>
 
@@ -106,11 +157,7 @@
     <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
       <div class="flex justify-between items-center">
         <h2 class="font-bold text-gray-700">Monthly Attendance & Leave Requests</h2>
-        <div class="flex items-center space-x-4 text-xs">
-          <span class="flex items-center"><span class="w-3 h-3 bg-holiday rounded-full mr-1"></span> Holiday / Poya</span>
-          <span class="flex items-center"><span class="w-3 h-3 bg-leave rounded-full mr-1"></span> Leave Requested</span>
-          <span class="flex items-center"><span class="w-3 h-3 bg-approved rounded-full mr-1"></span> Approved / Present</span>
-        </div>
+        <span class="text-xs text-gray-500 italic">* Click any cell to edit Timings, Advances & Notes</span>
       </div>
       <div id="adminCalendar" class="grid grid-cols-7 gap-2 text-center text-sm font-semibold text-gray-600">
         <!-- Calendar Grid Dynamic -->
@@ -119,7 +166,70 @@
 
   </main>
 
-  <!-- Footer (Pastel White/Pink Theme) -->
+  <!-- Detailed Modal for In/Out Time, Rate & Advance -->
+  <div id="dayModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div>
+          <h3 id="modalDateTitle" class="text-lg font-bold text-slate-800">Edit Day Details</h3>
+          <p id="modalDateSubtitle" class="text-xs text-slate-500">Update work status, time slots, rate & advance</p>
+        </div>
+        <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Attendance Status</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="setModalStatus('present')" id="btnStatusPresent" class="py-2 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1">
+              <i class="fa-solid fa-check"></i> Present
+            </button>
+            <button type="button" onclick="setModalStatus('halfday')" id="btnStatusHalf" class="py-2 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1">
+              <i class="fa-solid fa-clock-rotate-left"></i> Half Day
+            </button>
+            <button type="button" onclick="setModalStatus('absent')" id="btnStatusAbsent" class="py-2 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1">
+              <i class="fa-solid fa-xmark"></i> Absent
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">In Time</label>
+            <input type="time" id="modalInTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Out Time</label>
+            <input type="time" id="modalOutTime" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Daily Rate (LKR)</label>
+            <input type="number" id="modalRate" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-semibold outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Advance Given (LKR)</label>
+            <input type="number" id="modalAdvance" placeholder="0" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-rose-600 outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Remarks / Note</label>
+          <input type="text" id="modalRemark" placeholder="e.g. Came 20 mins late, extra baby milk" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm outline-none">
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 mt-6 pt-3 border-t border-slate-100">
+        <button onclick="closeModal()" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+        <button onclick="saveDayDetails()" class="px-4 py-2 rounded-xl bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold shadow-md">Save & Sync</button>
+      </div>
+    </div>
+  </div>
+
   <footer class="bg-white border-t border-gray-200 py-4 text-center text-xs text-gray-500">
     Baby Sitter Management Portal &copy; 2026 | Malith & Shyamini Admin Dashboard
   </footer>
@@ -132,6 +242,9 @@
     };
     const SITTER_NUMBERS = ["94789495469", "94772308654"];
     let activeParent = "malith";
+    let activeDateKey = null;
+    let selectedModalStatus = 'absent';
+    let currentRecordsCache = {};
 
     const HOLIDAYS_2026 = {
       "2026-01-03": "Duruthu Poya", "2026-01-15": "Tamil Thai Pongal",
@@ -154,6 +267,15 @@
     function switchUser() {
       activeParent = activeParent === "malith" ? "shyamini" : "malith";
       document.getElementById("currentUser").innerText = PARENTS[activeParent].name;
+    }
+
+    function getGlobalRate() {
+      return parseFloat(document.getElementById("dailyRateInput").value) || 1300;
+    }
+
+    function updateDailyRate() {
+      document.getElementById("statDefaultRate").innerText = getGlobalRate().toLocaleString();
+      loadAdminData();
     }
 
     async function loadAdminData() {
@@ -179,11 +301,11 @@
         }
       } catch(e) { console.error(e); }
 
-      // Fetch Attendance & Leaves
+      // Fetch Attendance
       try {
         const attRes = await fetch(`${FIREBASE_DB_URL}records/${selectedMonth}.json`);
-        const data = await attRes.json() || {};
-        renderCalendar(selectedMonth, data);
+        currentRecordsCache = await attRes.json() || {};
+        renderCalendar(selectedMonth, currentRecordsCache);
       } catch(e) { console.error(e); }
     }
 
@@ -196,92 +318,199 @@
       const [year, month] = monthStr.split("-").map(Number);
       const firstDay = new Date(year, month - 1, 1).getDay();
       const totalDays = new Date(year, month, 0).getDate();
+      const defaultRate = getGlobalRate();
 
       for (let i = 0; i < firstDay; i++) container.innerHTML += `<div></div>`;
 
-      let workedDays = 0;
+      let fullDaysCount = 0;
+      let halfDaysCount = 0;
+      let totalGrossEarned = 0;
+      let totalAdvances = 0;
       let pendingLeaves = 0;
 
       for (let d = 1; d <= totalDays; d++) {
         const dateKey = `${monthStr}-${String(d).padStart(2, '0')}`;
         const holidayName = HOLIDAYS_2026[dateKey];
-        const dayRecord = records[dateKey] || {};
+        const dayRecord = records[dateKey] || { status: 'absent', rate: defaultRate };
 
         let bgClass = "bg-white border-gray-200";
-        let statusText = "";
+        let statusBadge = "";
+        let dayEarnings = 0;
 
-        if (holidayName) {
-          bgClass = "bg-holiday border-yellow-300";
-          statusText = `<span class="text-[10px] font-bold block text-yellow-800 mb-1">${holidayName}</span>`;
-        }
-
-        if (dayRecord.status === "requested") {
+        if (dayRecord.status === "present" || dayRecord.status === "approved") {
+          fullDaysCount++;
+          dayEarnings = parseFloat(dayRecord.rate) || defaultRate;
+          bgClass = "bg-approved border-green-300";
+          statusBadge = `<span class="text-[10px] bg-green-200 text-green-800 font-bold px-1.5 py-0.5 rounded">Present</span>`;
+        } else if (dayRecord.status === "halfday") {
+          halfDaysCount++;
+          dayEarnings = (parseFloat(dayRecord.rate) || defaultRate) / 2;
+          bgClass = "bg-halfday border-orange-300";
+          statusBadge = `<span class="text-[10px] bg-orange-200 text-orange-800 font-bold px-1.5 py-0.5 rounded">Half Day</span>`;
+        } else if (dayRecord.status === "requested") {
           bgClass = "bg-leave border-red-300";
           pendingLeaves++;
-          statusText += `
-            <span class="text-[10px] text-red-700 font-bold block mb-1">Leave Req.</span>
-            <button onclick="updateDayStatus('${dateKey}', 'approved', true)" class="w-full text-[10px] bg-red-600 text-white px-2 py-0.5 rounded shadow">Approve</button>
-          `;
-        } else if (dayRecord.status === "approved" || dayRecord.status === "present") {
-          bgClass = "bg-approved border-green-300";
-          workedDays++;
-          statusText += `
-            <span class="text-[10px] text-green-800 font-bold block mb-1">Present</span>
-            <button onclick="updateDayStatus('${dateKey}', null, false)" class="w-full text-[10px] bg-white text-green-800 border border-green-300 hover:bg-green-50 px-2 py-0.5 rounded shadow mt-1">Undo</button>
-          `;
-        } else {
-          // Empty day -> allow admin to mark present
-          statusText += `
-            <button onclick="updateDayStatus('${dateKey}', 'present', false)" class="w-full mt-1 text-[10px] bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-2 py-0.5 rounded shadow">Mark Present</button>
-          `;
+          statusBadge = `<button onclick="event.stopPropagation(); approveLeave('${dateKey}')" class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded shadow">Approve</button>`;
+        } else if (holidayName) {
+          bgClass = "bg-holiday border-yellow-300";
         }
 
+        const dayAdv = parseFloat(dayRecord.advance) || 0;
+        totalGrossEarned += dayEarnings;
+        totalAdvances += dayAdv;
+
         container.innerHTML += `
-          <div class="p-2 min-h-[75px] border rounded-lg flex flex-col justify-between ${bgClass}">
-            <div class="text-left font-bold text-xs text-gray-700">${d}</div>
-            <div class="mt-1">${statusText}</div>
+          <div onclick="openModal('${dateKey}')" class="p-2 min-h-[85px] border rounded-lg flex flex-col justify-between cursor-pointer hover:shadow-md transition ${bgClass}">
+            <div>
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-xs">${d}</span>
+                ${statusBadge}
+              </div>
+              ${holidayName ? `<span class="text-[9px] font-bold text-yellow-900 block truncate mt-1">${holidayName}</span>` : ''}
+              ${(dayRecord.inTime || dayRecord.outTime) ? `<div class="text-[9px] text-gray-600 font-semibold mt-1"><i class="fa-regular fa-clock"></i> ${dayRecord.inTime || '--:--'} - ${dayRecord.outTime || '--:--'}</div>` : ''}
+              ${dayRecord.remark ? `<div class="text-[9px] text-gray-500 italic truncate mt-0.5">${dayRecord.remark}</div>` : ''}
+            </div>
+            <div class="flex justify-between items-center text-[10px] border-t pt-1 border-gray-200/60 mt-1 font-bold">
+              <span class="text-green-700">${dayEarnings > 0 ? 'LKR ' + dayEarnings.toLocaleString() : ''}</span>
+              ${dayAdv > 0 ? `<span class="text-rose-600 bg-rose-50 px-1 rounded">Adv: ${dayAdv}</span>` : ''}
+            </div>
           </div>
         `;
       }
 
-      const rate = parseFloat(document.getElementById("dailyRateInput").value) || 1300;
-      document.getElementById("statWorkedDays").innerText = `${workedDays} Days`;
-      document.getElementById("statEarned").innerText = `LKR ${(workedDays * rate).toLocaleString()}`;
+      const totalWorkedDays = fullDaysCount + (halfDaysCount * 0.5);
+      const netBalance = totalGrossEarned - totalAdvances;
+      const halfShare = netBalance > 0 ? netBalance / 2 : 0;
+
+      document.getElementById("statWorkedDays").innerText = `${totalWorkedDays} Days`;
+      document.getElementById("statWorkedSub").innerText = `${fullDaysCount} Full | ${halfDaysCount} Half`;
+      document.getElementById("statEarned").innerText = `LKR ${totalGrossEarned.toLocaleString()}`;
+      document.getElementById("statTotalAdvance").innerText = `LKR ${totalAdvances.toLocaleString()}`;
+      document.getElementById("statNetBalance").innerText = `LKR ${netBalance.toLocaleString()}`;
       document.getElementById("statPendingLeaves").innerText = pendingLeaves;
+
+      document.getElementById("splitTotalBalance").innerText = `LKR ${netBalance.toLocaleString()}`;
+      document.getElementById("malithAmount").innerText = `LKR ${Math.round(halfShare).toLocaleString()}`;
+      document.getElementById("shyaminiAmount").innerText = `LKR ${Math.round(halfShare).toLocaleString()}`;
     }
 
-    async function updateDayStatus(dateKey, status, notifySitter) {
-      const monthStr = dateKey.slice(0, 7);
-      
-      if (status === null) {
-        // Undo / Remove record
-        await fetch(`${FIREBASE_DB_URL}records/${monthStr}/${dateKey}.json`, {
-          method: "DELETE"
-        });
-      } else {
-        // Add Present or Approve Leave
-        await fetch(`${FIREBASE_DB_URL}records/${monthStr}/${dateKey}.json`, {
-          method: "PATCH",
-          body: JSON.stringify({ status: status })
-        });
+    function openModal(dateKey) {
+      activeDateKey = dateKey;
+      const record = currentRecordsCache[dateKey] || {};
+      const defaultRate = getGlobalRate();
 
-        // Send WhatsApp only if approving a requested leave
-        if (notifySitter) {
-          const msg = encodeURIComponent(`Hello, Your leave request for ${dateKey} has been APPROVED by ${PARENTS[activeParent].name}.`);
-          SITTER_NUMBERS.forEach((phone, idx) => {
-            setTimeout(() => {
-              window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${msg}`, '_blank');
-            }, idx * 1000);
-          });
-        }
+      document.getElementById("modalDateTitle").innerText = `Edit Details: ${dateKey}`;
+      setModalStatus(record.status || 'absent');
+      document.getElementById("modalInTime").value = record.inTime || '08:30';
+      document.getElementById("modalOutTime").value = record.outTime || '17:00';
+      document.getElementById("modalRate").value = record.rate || defaultRate;
+      document.getElementById("modalAdvance").value = record.advance || '';
+      document.getElementById("modalRemark").value = record.remark || '';
+
+      document.getElementById("dayModal").classList.remove("hidden");
+    }
+
+    function closeModal() {
+      document.getElementById("dayModal").classList.add("hidden");
+    }
+
+    function setModalStatus(status) {
+      selectedModalStatus = status;
+      const btnPresent = document.getElementById("btnStatusPresent");
+      const btnHalf = document.getElementById("btnStatusHalf");
+      const btnAbsent = document.getElementById("btnStatusAbsent");
+
+      btnPresent.className = "py-2 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 border-slate-200 bg-white text-slate-600";
+      btnHalf.className = "py-2 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 border-slate-200 bg-white text-slate-600";
+      btnAbsent.className = "py-2 rounded-xl border font-semibold text-xs flex flex-col items-center gap-1 border-slate-200 bg-white text-slate-600";
+
+      if(status === 'present' || status === 'approved') {
+        btnPresent.className = "py-2 rounded-xl border font-bold text-xs flex flex-col items-center gap-1 border-green-500 bg-green-500 text-white";
+      } else if(status === 'halfday') {
+        btnHalf.className = "py-2 rounded-xl border font-bold text-xs flex flex-col items-center gap-1 border-orange-500 bg-orange-500 text-white";
+      } else {
+        btnAbsent.className = "py-2 rounded-xl border font-bold text-xs flex flex-col items-center gap-1 border-slate-600 bg-slate-700 text-white";
+      }
+    }
+
+    async function saveDayDetails() {
+      if(!activeDateKey) return;
+      const monthStr = activeDateKey.slice(0, 7);
+
+      const payload = {
+        status: selectedModalStatus,
+        inTime: document.getElementById("modalInTime").value,
+        outTime: document.getElementById("modalOutTime").value,
+        rate: parseFloat(document.getElementById("modalRate").value) || getGlobalRate(),
+        advance: parseFloat(document.getElementById("modalAdvance").value) || 0,
+        remark: document.getElementById("modalRemark").value.trim()
+      };
+
+      await fetch(`${FIREBASE_DB_URL}records/${monthStr}/${activeDateKey}.json`, {
+        method: "PATCH",
+        body: JSON.stringify(payload)
+      });
+
+      closeModal();
+      loadAdminData();
+    }
+
+    async function approveLeave(dateKey) {
+      const monthStr = dateKey.slice(0, 7);
+      await fetch(`${FIREBASE_DB_URL}records/${monthStr}/${dateKey}.json`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: "approved" })
+      });
+
+      const msg = encodeURIComponent(`Hello, Your leave request for ${dateKey} has been APPROVED by ${PARENTS[activeParent].name}.`);
+      SITTER_NUMBERS.forEach((phone, idx) => {
+        setTimeout(() => {
+          window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${msg}`, '_blank');
+        }, idx * 1000);
+      });
+
+      loadAdminData();
+    }
+
+    function exportCSV() {
+      const selectedMonth = document.getElementById("adminMonthPicker").value;
+      const [year, month] = selectedMonth.split('-').map(Number);
+      const totalDays = new Date(year, month, 0).getDate();
+      const defaultRate = getGlobalRate();
+
+      let csvRows = ['Date,Holiday,Status,In Time,Out Time,Rate (LKR),Advance (LKR),Earned (LKR),Remark'];
+
+      for (let d = 1; d <= totalDays; d++) {
+        const dateKey = `${selectedMonth}-${String(d).padStart(2, '0')}`;
+        const holidayName = HOLIDAYS_2026[dateKey] || '';
+        const rec = currentRecordsCache[dateKey] || { status: 'absent', rate: defaultRate };
+
+        let earned = 0;
+        if (rec.status === 'present' || rec.status === 'approved') earned = rec.rate || defaultRate;
+        if (rec.status === 'halfday') earned = (rec.rate || defaultRate) / 2;
+
+        const row = [
+          dateKey,
+          `"${holidayName}"`,
+          rec.status,
+          rec.inTime || '',
+          rec.outTime || '',
+          rec.rate || defaultRate,
+          rec.advance || 0,
+          earned,
+          `"${(rec.remark || '').replace(/"/g, '""')}"`
+        ];
+        csvRows.push(row.join(','));
       }
 
-      // Refresh Data
-      loadAdminData();
-    }
-
-    function updateDailyRate() {
-      loadAdminData();
+      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `BabySitter_Attendance_${selectedMonth}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   </script>
 </body>
