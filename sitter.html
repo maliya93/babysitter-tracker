@@ -291,12 +291,21 @@
         emergencyPhone: document.getElementById("bioEmergency").value,
         address: document.getElementById("bioAddress").value,
         bankName: document.getElementById("bioBank").value,
-        accountNumber: document.getElementById("bioAcc").value
+        accountNumber: document.getElementById("bioAcc").value,
+        isLocked: true,
+        editRequested: false
       };
 
-      if(profileFile) payload.profilePic = await toBase64(profileFile);
-      if(nicFrontFile) payload.nicFront = await toBase64(nicFrontFile);
-      if(nicBackFile) payload.nicBack = await toBase64(nicBackFile);
+      // Add optional uploaded files before sending the completed payload.
+      if (profileFile) {
+        payload.profilePic = await toBase64(profileFile);
+      }
+        if (nicFrontFile) {
+        payload.nicFront = await toBase64(nicFrontFile);
+      }
+      if (nicBackFile) {
+        payload.nicBack = await toBase64(nicBackFile);
+      }
 
       await fetch(`${FIREBASE_DB_URL}sitter_bio.json`, {
         method: "PATCH",
@@ -320,6 +329,16 @@
           document.getElementById("bioAddress").value = bio.address || "";
           document.getElementById("bioBank").value = bio.bankName || "";
           document.getElementById("bioAcc").value = bio.accountNumber || "";
+            // මෙන්න මෙතැනට දාන්න:
+            if (bio.isLocked === true) {
+                document.getElementById("bioFullName").disabled = true;
+                document.getElementById("bioPhone").disabled = true;
+                document.getElementById("bioNic").disabled = true;
+                document.getElementById("bioEmergency").disabled = true;
+                document.getElementById("bioAddress").disabled = true;
+                document.getElementById("bioBank").disabled = true;
+                document.getElementById("bioAcc").disabled = true;
+            }
         }
       } catch(e) {}
 
