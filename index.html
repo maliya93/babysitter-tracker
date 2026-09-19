@@ -179,6 +179,17 @@
         </div>
       </div>
     </div>
+    <!-- Admin පිටුවේ Terms පිළිගත් බව පෙන්වන තත්ත්වය (Status Badge) -->
+    <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm my-4 flex items-center justify-between">
+        <div>
+            <h4 class="text-sm font-bold text-gray-700">පද්ධති කොන්දේසි තත්ත්වය (Terms & Conditions Status)</h4>
+            <p class="text-xs text-gray-500">සේවිකාව (Sitter) විසින් කොන්දේසි පිළිගැනීම පරීක්ෂා කිරීම.</p>
+        </div>
+        <div id="adminTermsVerificationBadge">
+            <!-- JavaScript හරහා මෙහි Status එක Load වේ -->
+            <span class="text-xs text-gray-400">පරීක්ෂා කරමින් පවතී...</span>
+        </div>
+    </div>
 
     <!-- Calendar View -->
     <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
@@ -706,6 +717,34 @@ function renderReportPreview() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+    // Admin පිටුව Load වන විට Sitter ගේ Terms තත්ත්වය පරීක්ෂා කිරීම
+    document.addEventListener("DOMContentLoaded", function () {
+        loadAdminTermsVerification();
+    });
+
+    function loadAdminTermsVerification() {
+        fetch(FIREBASE_DB_URL + "sitterTermsAgreement.json")
+        .then(response => response.json())
+        .then(data => {
+            const adminStatusContainer = document.getElementById("adminTermsVerificationBadge");
+            if (data && data.status === "Accepted") {
+                adminStatusContainer.innerHTML = `
+                    <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1.5 rounded-full border border-green-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-check"></i> ${data.acceptedBy} (ID: ${data.idCard}) - Agreed to T&C (${data.acceptedAt})
+                    </span>
+                `;
+            } else {
+                adminStatusContainer.innerHTML = `
+                    <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1.5 rounded-full border border-yellow-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-clock"></i> Pending: කොන්දේසි තවම පිළිගෙන නැත.
+                    </span>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error("දෝෂයක් සිදු විය:", error);
+        });
     }
   </script>
 </body>
