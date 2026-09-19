@@ -414,9 +414,15 @@ let sitterNicBackUrl = "";
           document.getElementById("adminBioEmergency").innerText = bio.emergencyPhone || "-";
           document.getElementById("adminBioBank").innerText = bio.bankName || "-";
           document.getElementById("adminBioAcc").innerText = bio.accountNumber || "-";
-          if(bio.profilePic) document.getElementById("adminBioPic").src = bio.profilePic;
-          if(bio.nicFront) document.getElementById("btnNicFront").href = bio.nicFront;
-          if(bio.nicBack) document.getElementById("btnNicBack").href = bio.nicBack;
+          if (bio.profilePic && document.getElementById("adminBioPic")) {
+        document.getElementById("adminBioPic").src = bio.profilePic;
+    }
+    if (bio.nicFront && document.getElementById("btnNicFront")) {
+        document.getElementById("btnNicFront").href = bio.nicFront;
+    }
+    if (bio.nicBack && document.getElementById("btnNicBack")) {
+        document.getElementById("btnNicBack").href = bio.nicBack;
+    }
           document.getElementById("bioStatusBadge").className = "text-xs px-2.5 py-1 rounded-full bg-green-100 text-green-800 font-medium";
           document.getElementById("bioStatusBadge").innerText = "Verified Profile";
           if (bio.editRequested === true) {
