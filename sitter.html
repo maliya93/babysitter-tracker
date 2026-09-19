@@ -282,23 +282,23 @@
         totalGrossEarned += dayEarnings;
         totalAdvances += dayAdv;
 
-        container.innerHTML += `
-          <div class="p-2 min-h-[85px] border rounded-lg flex flex-col justify-between ${bgClass}">
-            <div>
-              <div class="flex justify-between items-center">
-                <span class="font-bold text-xs">${d}</span>
-                ${statusBadge}
-              </div>
-              ${holidayName ? `<span class="text-[9px] font-bold text-yellow-900 block truncate mt-1">${holidayName}</span>` : ''}
-              ${(dayRecord.inTime || dayRecord.outTime) ? `<div class="text-[9px] text-gray-600 font-semibold mt-1"><i class="fa-regular fa-clock"></i> ${dayRecord.inTime || '--:--'} - ${dayRecord.outTime || '--:--'}</div>` : ''}
-              ${dayRecord.remark ? `<div class="text-[9px] text-gray-500 italic truncate mt-0.5">${dayRecord.remark}</div>` : ''}
-            </div>
-            <div class="flex justify-between items-center text-[10px] border-t pt-1 border-gray-200/60 mt-1 font-bold">
-              <span class="text-green-700">${dayEarnings > 0 ? 'LKR ' + dayEarnings.toLocaleString() : ''}</span>
-              ${dayAdv > 0 ? `<span class="text-rose-600 bg-rose-50 px-1 rounded">Adv: ${dayAdv}</span>` : ''}
-            </div>
+       container.innerHTML += `
+      <div onclick="openModal('${dateKey}')" class="p-1 sm:p-2 min-h-[75px] sm:min-h-[95px] border rounded-lg flex flex-col justify-between cursor-pointer hover:shadow-md transition ${bgClass}">
+        <div>
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-[11px] sm:text-xs">${d}</span>
+            ${statusBadge}
           </div>
-        `;
+          ${holidayName ? `<span class="text-[8px] sm:text-[9px] font-bold text-yellow-900 block truncate mt-0.5">${holidayName}</span>` : ''}
+          ${(dayRecord.inTime || dayRecord.outTime) ? `<div class="text-[8px] sm:text-[9px] text-gray-600 font-semibold mt-0.5 truncate"><i class="fa-regular fa-clock"></i> ${dayRecord.inTime || '--:--'} -${dayRecord.outTime || '--:--'}</div>` : ''}
+          ${dayRecord.remark ? `<div class="text-[8px] sm:text-[9px] text-gray-500 italic truncate mt-0.5">${dayRecord.remark}</div>` : ''}
+        </div>
+        <div class="flex justify-between items-center text-[9px] sm:text-[10px] border-t pt-0.5 border-gray-200/60 mt-0.5 font-bold">
+          <span class="text-green-700 truncate">${dayEarnings > 0 ? 'LKR ' + dayEarnings.toLocaleString() : ''}</span>
+          ${dayAdv > 0 ? `<span class="text-rose-600 bg-rose-50 px-1 rounded">Adv: ${dayAdv}</span>` : ''}
+        </div>
+      </div>
+    `;
       }
 
       const totalWorkedDays = fullDaysCount + (halfDaysCount * 0.5);
