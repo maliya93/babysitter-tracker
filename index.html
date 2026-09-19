@@ -391,7 +391,8 @@
       document.getElementById("statDefaultRate").innerText = getGlobalRate().toLocaleString();
       loadAdminData();
     }
-
+let sitterNicFrontUrl = "";
+let sitterNicBackUrl = "";
     async function loadAdminData() {
       const selectedMonth = document.getElementById("adminMonthPicker").value;
       
@@ -399,6 +400,10 @@
       try {
         const bioRes = await fetch(`${FIREBASE_DB_URL}sitter_bio.json`);
         const bio = await bioRes.json();
+        if(bio) {
+  if(bio.nicFront) sitterNicFrontUrl = bio.nicFront;
+  if(bio.nicBack) sitterNicBackUrl = bio.nicBack;
+}
         if(bio) {
           document.getElementById("adminBioName").innerText = bio.fullName || "Not Submitted";
           document.getElementById("adminBioPhone").innerText = "Phone: " + (bio.phone || "-");
@@ -747,6 +752,14 @@ function renderReportPreview() {
             console.error("දෝෂයක් සිදු විය:", error);
         });
     }
+    function openNicModal(type) {
+    let targetUrl = type === 'front' ? sitterNicFrontUrl : sitterNicBackUrl;
+    if(targetUrl) {
+        window.open(targetUrl, '_blank');
+    } else {
+        alert("සමාවන්න! NIC " + (type === 'front' ? "Front" : "Back") + " පින්තූරය තවම Upload කර නැත.");
+    }
+}
   </script>
 </body>
 </html>
