@@ -417,6 +417,13 @@ let sitterNicBackUrl = "";
           if(bio.nicBack) document.getElementById("btnNicBack").href = bio.nicBack;
           document.getElementById("bioStatusBadge").className = "text-xs px-2.5 py-1 rounded-full bg-green-100 text-green-800 font-medium";
           document.getElementById("bioStatusBadge").innerText = "Verified Profile";
+          if (bio.editRequested === true) {
+            // Sitter විසින් දත්ත වෙනස් කිරීමට ඉල්ලීමක් කර ඇත්නම් Admin ට පෙන්වන කොටස
+            document.getElementById('adminEditApprovalContainer').innerHTML = `
+                <p class="text-xs text-red-500 font-bold">Sitter විසින් දත්ත වෙනස් කිරීමට ඉල්ලීමක් කර ඇත!</p>
+                <button onclick="approveSitterEdit()" class="bg-green-500 text-white px-3 py-1 rounded text-xs mt-1">Approve Edit</button>
+            `;
+        }
         }
       } catch(e) { console.error(e); }
 
@@ -759,6 +766,18 @@ function renderReportPreview() {
     } else {
         alert("සමාවන්න! NIC " + (type === 'front' ? "Front" : "Back") + " පින්තූරය තවම Upload කර නැත.");
     }
+}
+function approveSitterEdit() {
+    fetch(`${FIREBASE_DB_URL}sitter_bio.json`, {
+        method: "PATCH",
+        body: JSON.stringify({ 
+            isLocked: false,       // Sitter ට නැවත Edit කිරීමට ඉඩ දෙයි
+            editRequested: false   // ඉල්ලීම ඉවත් කරයි
+        })
+    }).then(() => {
+        alert("Sitter ට දත්ත වෙනස් කිරීමට සාර්ථකව අවසර ලබා දෙන ලදී!");
+        loadAdminData();
+    });
 }
   </script>
 </body>
