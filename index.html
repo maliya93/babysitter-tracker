@@ -16,16 +16,21 @@
         body * {
             visibility: hidden;
         }
-        #reportPreviewModal, #reportPreviewModal * {
+        #reportContainer, #reportContainer * {
             visibility: visible;
         }
-        #reportPreviewModal {
+        #reportContainer {
             position: absolute;
             left: 0;
             top: 0;
             width: 100%;
             margin: 0;
-            padding: 0;
+            padding: 10px;
+            font-size: 11px; /* අකුරු ප්‍රමාණය කුඩා කර තනි පිටුවකට ගැලපීම */
+        }
+        /* මුද්‍රණය කරන විට අවශ්‍ය නොවන බොත්තම් සැඟවීම */
+        .print\:hidden {
+            display: none !important;
         }
     }
   </style>
