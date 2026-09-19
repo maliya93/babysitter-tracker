@@ -165,7 +165,56 @@
         <!-- Calendar Grid Dynamic -->
       </div>
     </div>
+<!-- Report Preview Section -->
+    <div id="reportPreviewModal" class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4 print:shadow-none print:border-none">
+        
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-pink-100 pb-4 mb-4 gap-4">
+            <div>
+                <h2 class="text-xl font-black text-gray-800 tracking-wide">පැමිණීමේ සහ ආදායම් වාර්තාව (ATTENDANCE & EARNINGS RECORD)</h2>
+                <p class="text-xs text-gray-500 mt-0.5">ළමයින් බලාගන්න අයගේ මාසික සාරාංශය</p>
+            </div>
+            <div class="flex gap-4 bg-pink-50 p-3 rounded-xl border border-pink-200">
+                <div>
+                    <span class="block text-[10px] font-semibold text-gray-500 uppercase">සක්‍රීය දෙමාපියා</span>
+                    <span class="text-xs font-bold text-pink-700">Malith & Shyamini</span>
+                </div>
+                <div class="border-l border-pink-300 pl-3">
+                    <span class="block text-[10px] font-semibold text-gray-500 uppercase">මාසය</span>
+                    <span id="printMonthDisplay" class="text-xs font-bold text-gray-800">-</span>
+                </div>
+            </div>
+        </div>
 
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-indigo-50 text-indigo-900 text-xs uppercase font-bold tracking-wider">
+                        <th class="p-2.5 border border-indigo-100 rounded-tl-lg">දිනය</th>
+                        <th class="p-2.5 border border-indigo-100">නිවාඩු / සටහන</th>
+                        <th class="p-2.5 border border-indigo-100">තත්ත්වය</th>
+                        <th class="p-2.5 border border-indigo-100">පැමිණි වේලාව</th>
+                        <th class="p-2.5 border border-indigo-100">පිටත්වූ වේලාව</th>
+                        <th class="p-2.5 border border-indigo-100">අනුපාතිකය (LKR)</th>
+                        <th class="p-2.5 border border-indigo-100">අත්තිකාරම්</th>
+                        <th class="p-2.5 border border-indigo-100">උපයාගත් මුදල (LKR)</th>
+                        <th class="p-2.5 border border-indigo-100 rounded-tr-lg">විශේෂ සටහන්</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTableBody" class="text-xs text-gray-700">
+                    <!-- Dynamic Data -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Print Button -->
+        <div class="mt-4 flex justify-end gap-3 print:hidden">
+            <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-xl shadow transition flex items-center gap-2 text-xs">
+                <i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න / PDF ලෙස සුරකින්න
+            </button>
+        </div>
+    </div>
   </main>
 
   <!-- Detailed Modal for In/Out Time, Rate & Advance -->
@@ -308,9 +357,54 @@
         const attRes = await fetch(`${FIREBASE_DB_URL}records/${selectedMonth}.json`);
         currentRecordsCache = await attRes.json() || {};
         renderCalendar(selectedMonth, currentRecordsCache);
+        renderReportPreview();
       } catch(e) { console.error(e); }
     }
+function renderReportPreview() {
+        const selectedMonth = document.getElementById("adminMonthPicker").value;
+        if (!selectedMonth) return;
 
+        document.getElementById("printMonthDisplay").innerText = selectedMonth;
+
+        const [year, month] = selectedMonth.split('-').map(Number);
+        const totalDays = new Date(year, month, 0).getDate();
+        const defaultRate = getGlobalRate();
+
+        let tableHTML = '';
+
+        for (let d = 1; d <= totalDays; d++) {
+            const dateKey = `${selectedMonth}-${String(d).padStart(2, '0')}`;
+            const holidayName = HOLIDAYS_2026[dateKey] || '';
+            const rec = currentRecordsCache[dateKey] || { status: 'absent', rate: defaultRate };
+
+            let earned = 0;
+            if (rec.status === 'present' || rec.status === 'approved') earned = rec.rate || defaultRate;
+            if (rec.status === 'halfday') earned = (rec.rate || defaultRate) / 2;
+
+            let statusBadge = '<span class="text-gray-400">පැමිණ නැත (Absent)</span>';
+            if (rec.status === 'present' || rec.status === 'approved') {
+                statusBadge = '<span class="text-green-600 font-semibold">පැමිණ ඇත (Present)</span>';
+            } else if (rec.status === 'halfday') {
+                statusBadge = '<span class="text-orange-600 font-semibold">අඩ දිනක් (Half Day)</span>';
+            }
+
+            tableHTML += `
+                <tr class="hover:bg-gray-50 border-b border-gray-100">
+                    <td class="p-2.5 border border-gray-100 font-medium text-gray-900">${dateKey}</td>
+                    <td class="p-2.5 border border-gray-100 text-pink-600 font-medium">${holidayName}</td>
+                    <td class="p-2.5 border border-gray-100">${statusBadge}</td>
+                    <td class="p-2.5 border border-gray-100 text-gray-500">${rec.inTime || '-'}</td>
+                    <td class="p-2.5 border border-gray-100 text-gray-500">${rec.outTime || '-'}</td>
+                    <td class="p-2.5 border border-gray-100">${rec.rate || defaultRate}</td>
+                    <td class="p-2.5 border border-gray-100 text-rose-500">${rec.advance || 0}</td>
+                    <td class="p-2.5 border border-gray-100 font-bold text-gray-800">${earned}</td>
+                    <td class="p-2.5 border border-gray-100 text-gray-500 italic">${rec.remark || ''}</td>
+                </tr>
+            `;
+        }
+
+        document.getElementById("reportTableBody").innerHTML = tableHTML;
+    }
     function renderCalendar(monthStr, records) {
       const container = document.getElementById("adminCalendar");
       container.innerHTML = "";
