@@ -148,7 +148,7 @@
       </div>
     </div>
 
-    <!-- Sitter Bio Data Card (Admin View) -->
+ <!-- Sitter Bio Data Card (Admin View) -->
     <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
         <h2 class="font-bold text-gray-700 flex items-center">
@@ -173,9 +173,10 @@
           <p><strong>Bank:</strong> <span id="adminBioBank">-</span></p>
           <p><strong>Account No:</strong> <span id="adminBioAcc">-</span></p>
         </div>
+        <!-- Mobile සහ PC දෙකේදීම වැඩ කිරීමට a ටැග් වෙනුවට button සහ onclick පාවිච්චි කරන ලදී -->
         <div class="flex space-x-2">
-          <a id="btnNicFront" href="#" target="_blank" class="text-xs bg-gray-100 hover:bg-gray-200 border px-3 py-2 rounded text-center flex-1 font-medium text-gray-700">NIC Front</a>
-          <a id="btnNicBack" href="#" target="_blank" class="text-xs bg-gray-100 hover:bg-gray-200 border px-3 py-2 rounded text-center flex-1 font-medium text-gray-700">NIC Back</a>
+          <button type="button" onclick="openNicModal('front')" class="text-xs bg-gray-100 hover:bg-gray-200 border px-3 py-2 rounded text-center flex-1 font-medium text-gray-700 transition">NIC Front</button>
+          <button type="button" onclick="openNicModal('back')" class="text-xs bg-gray-100 hover:bg-gray-200 border px-3 py-2 rounded text-center flex-1 font-medium text-gray-700 transition">NIC Back</button>
         </div>
       </div>
     </div>
