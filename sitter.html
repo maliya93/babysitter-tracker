@@ -147,7 +147,45 @@
 
   <footer class="bg-white border-t border-gray-200 py-4 text-center text-xs text-gray-500">
     Baby Sitter Attendance Portal &copy; 2026
-  </footer>
+    <!-- Seva kondesi saha regulasi (Terms & Conditions - Scrollable Red Box) -->
+    <div class="bg-red-50 border-2 border-red-300 rounded-xl p-5 shadow-sm space-y-4 my-4 text-gray-800">
+        <div class="border-b border-red-200 pb-3">
+            <h3 class="text-base font-bold text-red-700 flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation"></i> 
+                2. Seva kondesi saha regulasi / சேவை நிபந்தனைகள் (Terms & Conditions)
+            </h3>
+        </div>
+
+        <!-- Scroll kala haki petti pradeshaya (Scrollable Box) -->
+        <div id="termsScrollBox" class="h-60 overflow-y-auto bg-white p-4 rounded-lg border border-red-200 space-y-3 text-xs leading-relaxed shadow-inner">
+            <div>
+                <p class="font-bold text-red-900">2.1. Pradhana rajakariya saha wagakima:</p>
+                <p>Sevikawage mulika saha pradhanatama rajakariya vanuye daruwata purna adaraya, karunawa, awadhanaya saha arakshawa sapayamin wagaweemen balaganimiya.</p>
+            </div>
+            <div>
+                <p class="font-bold text-red-900">2.2. Wethanaya saha sewa kalaya:</p>
+                <p>dainika wethanaya Rs. 1,300/- vanu athara, sewayata paminiyena dina sadaha pamanak gewanu labe.</p>
+            </div>
+            <div>
+                <p class="font-bold text-red-900">2.3. Niwadu labaganima:</p>
+                <p>Niwadu awashya nam damina 2kata pera sewa yojakayata danum diya utuya.</p>
+            </div>
+        </div>
+
+        <!-- Yatin athi OK & Save bottam pradeshaya -->
+        <div class="flex flex-col sm:flex-row justify-between items-center pt-2 gap-3">
+            <span id="termsStatusText" class="text-xs font-semibold text-red-600">
+                ⚠️ Karunakara kondesi hondin kiyawa ekaga vanna (Read and Accept)
+            </span>
+            <button id="acceptTermsBtn" onclick="acceptAndSaveTerms()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-5 py-2.5 rounded-lg shadow transition duration-200 flex items-center gap-2">
+                <i class="fa-solid fa-check-circle"></i> OK & Save (Agree)
+            </button>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t border-gray-200 py-4 text-center text-xs text-gray-500">
+        Baby Sitter Management Portal &copy; 2026
+    </footer>
 
   <script>
     const FIREBASE_DB_URL = "https://babysitter-tracker-7ce0e-default-rtdb.firebaseio.com/";
@@ -329,6 +367,62 @@
       });
 
       loadSitterData();
+    }
+    // පිටුව Load වන විට Sitter මීට පෙර Accept කර ඇද්දැයි පරීක්ෂා කිරීම
+    document.addEventListener("DOMContentLoaded", function () {
+        checkSitterTermsStatus();
+    });
+
+    function acceptAndSaveTerms() {
+        const sitterName = "Divyapriya"; // Sitter ගේ නම
+        const sitterIdCard = "987654321V"; // Sitter ගේ හැඳුනුම්පත් අංකය
+        const timestamp = new Date().toLocaleString();
+
+        const termsData = {
+            status: "Accepted",
+            acceptedBy: sitterName,
+            idCard: sitterIdCard,
+            acceptedAt: timestamp
+        };
+
+        // Firebase Database වෙත යැවීම
+        fetch(FIREBASE_DB_URL + "sitterTermsAgreement.json", {
+            method: "PUT", // PUT මඟින් දත්ත ස්ථිරවම යාවත්කාලීන වේ
+            body: JSON.stringify(termsData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            lockTermsUI(sitterName, timestamp);
+            alert("ස්තුතියි! ඔබ කොන්දේසි සාර්ථකව පිළිගන්නා ලදී.");
+        })
+        .catch(error => {
+            console.error("දෝෂයක් සිදු විය:", error);
+            alert("දෝෂයක් සිදු විය. කරුණාකර නැවත උත්සාහ කරන්න.");
+        });
+    }
+
+    function lockTermsUI(name, time) {
+        const btn = document.getElementById("acceptTermsBtn");
+        const statusText = document.getElementById("termsStatusText");
+
+        btn.disabled = true;
+        btn.classList.remove("bg-red-600", "hover:bg-red-700");
+        btn.classList.add("bg-gray-400", "cursor-not-allowed");
+        btn.innerHTML = '<i class="fa-solid fa-lock"></i> Accepted & Locked';
+
+        statusText.innerHTML = `✅ ${name} විසින් කොන්දේසි එකඟ වී ඇත (${time})`;
+        statusText.classList.remove("text-red-600");
+        statusText.classList.add("text-green-600", "font-bold");
+    }
+
+    function checkSitterTermsStatus() {
+        fetch(FIREBASE_DB_URL + "sitterTermsAgreement.json")
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.status === "Accepted") {
+                lockTermsUI(data.acceptedBy, data.acceptedAt);
+            }
+        });
     }
   </script>
 </body>
