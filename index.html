@@ -11,6 +11,23 @@
     .bg-leave { background-color: #FCA5A5 !important; border-color: #F87171 !important; }
     .bg-approved { background-color: #BBF7D0 !important; border-color: #86EFAC !important; }
     .bg-halfday { background-color: #FED7AA !important; border-color: #FDBA74 !important; }
+    /* මුද්‍රණය කරන විට අවශ්‍ය කොටස පමණක් පෙන්වීමට */
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #reportPreviewModal, #reportPreviewModal * {
+            visibility: visible;
+        }
+        #reportPreviewModal {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
@@ -208,8 +225,11 @@
             </table>
         </div>
 
-        <!-- Print Button -->
-        <div class="mt-4 flex justify-end gap-3 print:hidden">
+       <!-- මුද්‍රණය කිරීමේ සහ WhatsApp මඟින් යැවීමේ බොත්තම් -->
+        <div class="mt-4 flex flex-wrap justify-end gap-3 print:hidden">
+            <button onclick="sendReportToWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl shadow transition flex items-center gap-2 text-xs">
+                <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp වෙත යවන්න
+            </button>
             <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-xl shadow transition flex items-center gap-2 text-xs">
                 <i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න / PDF ලෙස සුරකින්න
             </button>
@@ -404,6 +424,54 @@ function renderReportPreview() {
         }
 
         document.getElementById("reportTableBody").innerHTML = tableHTML;
+    }
+    function sendReportToWhatsApp() {
+        const selectedMonth = document.getElementById("adminMonthPicker").value;
+        if (!selectedMonth) {
+            alert("කරුණාකර මාසයක් තෝරන්න.");
+            return;
+        }
+
+        const [year, month] = selectedMonth.split('-').map(Number);
+        const totalDays = new Date(year, month, 0).getDate();
+        const defaultRate = getGlobalRate();
+
+        let totalWorked = 0;
+        let totalEarned = 0;
+        let totalAdv = 0;
+
+        for (let d = 1; d <= totalDays; d++) {
+            const dateKey = `${selectedMonth}-${String(d).padStart(2, '0')}`;
+            const rec = currentRecordsCache[dateKey] || { status: 'absent', rate: defaultRate };
+
+            let earned = 0;
+            if (rec.status === 'present' || rec.status === 'approved') {
+                totalWorked += 1;
+                earned = rec.rate || defaultRate;
+            } else if (rec.status === 'halfday') {
+                totalWorked += 0.5;
+                earned = (rec.rate || defaultRate) / 2;
+            }
+            totalEarned += earned;
+            totalAdv += parseFloat(rec.advance) || 0;
+        }
+
+        const netPayable = totalEarned - totalAdv;
+
+        // WhatsApp පණිවිඩය සකස් කිරීම
+        let message = `*මාසික පැමිණීමේ සහ ආදායම් වාර්තාව* 📅\n`;
+        message += `මාසය: ${selectedMonth}\n\n`;
+        message += `• වැඩ කළ දින සංඛ්‍යාව: ${totalWorked} Days\n`;
+        message += `• මුළු උපයාගත් මුදල: LKR ${totalEarned.toLocaleString()}\n`;
+        message += `• ලබාගත් අත්තිකාරම්: LKR ${totalAdv.toLocaleString()}\n`;
+        message += `• ගෙවිය යුතු ශේෂය: *LKR ${netPayable.toLocaleString()}*\n\n`;
+        message += `ස්තුතියි!`;
+
+        const encodedMessage = encodeURIComponent(message);
+        
+        const sitterPhone = SITTER_NUMBERS[0] || ""; 
+        
+        window.open(`https://api.whatsapp.com/send?phone=${sitterPhone}&text=${encodedMessage}`, '_blank');
     }
     function renderCalendar(monthStr, records) {
       const container = document.getElementById("adminCalendar");
