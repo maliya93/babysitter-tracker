@@ -330,7 +330,7 @@
           document.getElementById("bioBank").value = bio.bankName || "";
           document.getElementById("bioAcc").value = bio.accountNumber || "";
             // මෙන්න මෙතැනට දාන්න:
-            if (bio.isLocked === true) {
+           if (bio.isLocked === true) {
                 document.getElementById("bioFullName").disabled = true;
                 document.getElementById("bioPhone").disabled = true;
                 document.getElementById("bioNic").disabled = true;
@@ -338,6 +338,32 @@
                 document.getElementById("bioAddress").disabled = true;
                 document.getElementById("bioBank").disabled = true;
                 document.getElementById("bioAcc").disabled = true;
+
+                // පින්තූර Upload කරන File Inputs ටිකත් ඩිසේබල් කරයි
+                document.getElementById("fileProfile").disabled = true;
+                document.getElementById("fileNicFront").disabled = true;
+                document.getElementById("fileNicBack").disabled = true;
+
+                // Save බටන් එක සඟවයි (Hidden කරයි)
+                let saveBtn = document.querySelector("button[type='submit']");
+                if (saveBtn) saveBtn.style.display = "none";
+
+                // Sitter සඳහා "Request Edit" බොත්තම පෙන්වීම
+                let requestContainer = document.getElementById("sitterRequestContainer");
+                if (!requestContainer) {
+                    requestContainer = document.createElement("div");
+                    requestContainer.id = "sitterRequestContainer";
+                    requestContainer.className = "mt-4 text-center";
+                    if (saveBtn && saveBtn.parentNode) {
+                        saveBtn.parentNode.appendChild(requestContainer);
+                    }
+                }
+
+                if (bio.editRequested === true) {
+                    requestContainer.innerHTML = `<p class="text-orange-500 font-bold text-sm">වෙනස්කම් සඳහා කළ ඉල්ලීම Admin වෙත යවා ඇත. කරුණාකර අනුමැතිය ලැබෙන තෙක් රැඳී සිටින්න.</p>`;
+                } else {
+                    requestContainer.innerHTML = `<button type="button" onclick="requestProfileEdit()" class="bg-yellow-500 text-white px-4 py-2 rounded font-bold shadow hover:bg-yellow-600">Request Edit Access</button>`;
+                }
             }
         }
       } catch(e) {}
@@ -502,6 +528,17 @@
             }
         });
     }
+    function requestProfileEdit() {
+    fetch(`${FIREBASE_DB_URL}sitter_bio.json`, {
+        method: "PATCH",
+        body: JSON.stringify({ 
+            editRequested: true 
+        })
+    }).then(() => {
+        alert("වෙනස්කම් සඳහා ඉල්ලීම Admin වෙත සාර්ථකව යවන ලදී!");
+        loadSitterData();
+    });
+}
   </script>
 </body>
 </html>
