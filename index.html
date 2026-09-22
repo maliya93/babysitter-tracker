@@ -378,6 +378,7 @@
       const today = new Date();
       document.getElementById("adminMonthPicker").value = today.toISOString().slice(0, 7);
       loadAdminData();
+      listenToSitterLocation();
     });
 
     function switchUser() {
@@ -739,6 +740,8 @@ function renderReportPreview() {
       link.click();
       document.body.removeChild(link);
     }
+    <!-- Admin පුවරුවේ Sitter ගේ Live Location එක පෙන්වන තැන -->
+<div id="adminSitterLocationStatus" class="mt-4"></div>
     // Admin පිටුව Load වන විට Sitter ගේ Terms තත්ත්වය පරීක්ෂා කිරීම
     document.addEventListener("DOMContentLoaded", function () {
         loadAdminTermsVerification();
@@ -785,6 +788,38 @@ function approveSitterEdit() {
     }).then(() => {
         alert("Sitter ට දත්ත වෙනස් කිරීමට සාර්ථකව අවසර ලබා දෙන ලදී!");
         loadAdminData();
+    });
+}
+// Admin patthen Sitter ge Live Location eka balagane
+function listenToSitterLocation() {
+    const locationRef = firebase.database().ref('sitter_location');
+    
+    locationRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        const locationDiv = document.getElementById('adminSitterLocationStatus');
+        
+        if (!locationDiv) return;
+
+        if (data && data.isOnline) {
+            const lat = data.lat;
+            const lng = data.lng;
+            const updatedTime = new Date(data.updatedAt).toLocaleTimeString();
+            
+            locationDiv.innerHTML = `
+                <div class="bg-green-50 border border-green-200 p-3 rounded-lg text-xs text-green-800 shadow-sm mt-2">
+                    <p class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle-dot text-green-500 animate-pulse"></i> Sitter Online (Live Location)</p>
+                    <p class="mt-1">Latitude: ${lat}</p>
+                    <p>Longitude: ${lng}</p>
+                    <p class="text-[10px] text-gray-500 mt-1">Last Updated: ${updatedTime}</p>
+                </div>
+            `;
+        } else {
+            locationDiv.innerHTML = `
+                <div class="bg-gray-50 border border-gray-200 p-3 rounded-lg text-xs text-gray-500 shadow-sm mt-2">
+                    <p class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle text-gray-400"></i> Sitter Offline / Location Disabled</p>
+                </div>
+            `;
+        }
     });
 }
   </script>
