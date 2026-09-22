@@ -874,12 +874,24 @@ function listenToSitterLocation() {
             const lng = data.lng;
             const updatedTime = new Date(data.updatedAt).toLocaleTimeString();
             
-            locationDiv.innerHTML = `
-                <div class="bg-green-50 border border-green-200 p-3 rounded-lg text-xs text-green-800 shadow-sm mt-2">
+           locationDiv.innerHTML = `
+                <div class="bg-green-50 border border-green-200 p-3 rounded-lg text-xs text-green-800 shadow-sm mt-2 space-y-2">
                     <p class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle-dot text-green-500 animate-pulse"></i> Sitter Online (Live Location)</p>
-                    <p class="mt-1">Latitude: ${lat}</p>
+                    <p>Latitude: ${lat}</p>
                     <p>Longitude: ${lng}</p>
-                    <p class="text-[10px] text-gray-500 mt-1">Last Updated: ${updatedTime}</p>
+                    <p class="text-[10px] text-gray-500">Last Updated: ${updatedTime}</p>
+                    
+                    <!-- ශ්‍රී ලංකා මැප් එක පෙන්වන Iframe කොටස -->
+                    <div class="w-full h-48 rounded-lg overflow-hidden border border-green-300 mt-2">
+                        <iframe 
+                            width="100%" 
+                            height="100%" 
+                            style="border:0;" 
+                            allowfullscreen="" 
+                            loading="lazy" 
+                            src="https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed">
+                        </iframe>
+                    </div>
                 </div>
             `;
         } else {
