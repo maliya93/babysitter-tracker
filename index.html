@@ -342,6 +342,20 @@
   </footer>
 
   <script>
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUBx0SB411E73D9eHuplTmzWG8m_4g2Xw",
+      authDomain: "babysitter-tracker-7ce0e.firebaseapp.com",
+      databaseURL: "https://babysitter-tracker-7ce0e-default-rtdb.firebaseio.com",
+      projectId: "babysitter-tracker-7ce0e",
+      storageBucket: "babysitter-tracker-7ce0e.firebasestorage.app",
+      messagingSenderId: "365665635292",
+      appId: "1:365665635292:web:f8c30aadaa38e864af5d19"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
     const FIREBASE_DB_URL = "https://babysitter-tracker-7ce0e-default-rtdb.firebaseio.com/";
     const PARENTS = {
       malith: { name: "Malith", phone: "94787365590" },
