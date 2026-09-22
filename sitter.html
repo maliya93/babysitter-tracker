@@ -265,54 +265,58 @@
       "2026-11-23": "Unduvap Poya", "2026-12-25": "Christmas Day"
     };
 
-    document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
       const today = new Date();
       document.getElementById("sitterMonthPicker").value = today.toISOString().slice(0, 7);
       loadSitterData();
+      checkSitterTermsStatus();
+      
+      // Page eka load wena gamanma live location tracking start karai
+      startLiveLocationTracking();
     });
+
     // Sitter ගේ Live Location එක ට්‍රැක් කර Firebase වෙත Real-time යැවීම
-function startLiveLocationTracking() {
-    // Sitter කෙනෙක් වෙනුවෙන් ස්ථිර ID එකක් හෝ NIC එක පාවිච්චි කළ හැක (උදාහරණයක් ලෙස NIC එක හෝ 'sitter_01')
-    const sitterId = "default_sitter"; // අවශ්‍ය නම් bioNic එකෙන් ලබා ගැනීමට හැක
+    function startLiveLocationTracking() {
+      // Sitter කෙනෙක් වෙනුවෙන් ස්ථිර ID එකක් හෝ NIC එක පාවිච්චි කළ හැක
+      const sitterId = "default_sitter";
 
-    if ("geolocation" in navigator) {
+      if ("geolocation" in navigator) {
         navigator.geolocation.watchPosition(
-            (position) => {
-                const latitude = position.coords.latitude;
-                const longitude = position.coords.longitude;
-                const timestamp = new Date().toISOString();
+          (position) => {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            const timestamp = new Date().toISOString();
 
-                // Firebase Realtime Database වෙත ලොකේෂන් ඩේටා යැවීම
-                fetch(`${FIREBASE_DB_URL}sitter_location.json`, {
-                    method: "PUT", // PUT මඟින් වර්තමාන තත්ත්වය නිරන්තරයෙන් අප්ඩේට් වේ
-                    body: JSON.stringify({
-                        lat: latitude,
-                        lng: longitude,
-                        updatedAt: timestamp,
-                        isOnline: true
-                    })
-                }).catch(error => {
-                    console.error("Location update error: ", error);
-                });
-            },
-            (error) => {
-                console.warn("Geolocation warning/error: " + error.message);
-                // GPS අක්‍රීය කර ඇත්නම් isOnline: false ලෙස යැවීම
-                fetch(`${FIREBASE_DB_URL}sitter_location.json`, {
-                    method: "PATCH",
-                    body: JSON.stringify({ isOnline: false })
-                });
-            },
-            {
-                enableHighAccuracy: true,
-                maximumAge: 10000,
-                timeout: 5000
-            }
+            // Firebase Realtime Database වෙත ලොකේෂන් ඩේටා යැවීම
+            fetch(`${FIREBASE_DB_URL}sitter_location.json`, {
+              method: "PUT",
+              body: JSON.stringify({
+                lat: latitude,
+                lng: longitude,
+                updatedAt: timestamp,
+                isOnline: true
+              })
+            }).catch(error => {
+              console.error("Location update error: ", error);
+            });
+          },
+          (error) => {
+            console.warn("Geolocation warning/error: " + error.message);
+            fetch(`${FIREBASE_DB_URL}sitter_location.json`, {
+              method: "PATCH",
+              body: JSON.stringify({ isOnline: false })
+            });
+          },
+          {
+            enableHighAccuracy: true,
+            maximumAge: 10000,
+            timeout: 5000
+          }
         );
-    } else {
+      } else {
         console.log("Geolocation is not supported by this browser.");
+      }
     }
-}
 
     const toBase64 = file => new Promise((resolve, reject) => {
       const reader = new FileReader();
