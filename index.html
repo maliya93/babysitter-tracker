@@ -844,6 +844,7 @@ function approveSitterEdit() {
 }
 // Admin patthen Sitter ge Live Location eka balagane
 function listenToSitterLocation() {
+  console.log("Location function working!");
     const locationRef = firebase.database().ref('sitter_location');
     
     locationRef.on('value', (snapshot) => {
