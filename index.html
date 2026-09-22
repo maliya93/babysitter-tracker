@@ -445,6 +445,58 @@ let sitterNicBackUrl = "";
         renderReportPreview();
       } catch(e) { console.error(e); }
     }
+    function listenToSitterLocation() {
+    const locationStatusDiv = document.getElementById("adminSitterLocationStatus");
+    if (!locationStatusDiv) return;
+
+    firebase.database().ref('sitter_location').on('value', (snapshot) => {
+        const data = snapshot.val();
+        
+        if (!data) {
+            locationStatusDiv.innerHTML = `
+                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-slate-100 text-slate-400 rounded-lg flex items-center justify-center">
+                            <i class="fa-solid fa-location-slash"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-700">සජීවී පිහිටුම (Live Location)</h4>
+                            <p class="text-xs text-slate-400">තවම ලොකේෂන් දත්ත ලැබී නැත.</p>
+                        </div>
+                    </div>
+                    <span class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-semibold">නොබැඳි (Offline)</span>
+                </div>
+            `;
+            return;
+        }
+
+        const lat = data.lat;
+        const lng = data.lng;
+        const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+
+        locationStatusDiv.innerHTML = `
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-pink-50 text-pink-500 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-location-dot animate-bounce"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-700">සජීවී පිහිටුම (Live Location)</h4>
+                        <p class="text-xs text-slate-500">අක්ෂාංශ: ${lat.toFixed(4)}, සංචාරක: ${lng.toFixed(4)}</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-semibold flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> සජීවීව (Online)
+                    </span>
+                    <a href="${mapUrl}" target="_blank" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-medium transition flex items-center gap-1">
+                        <i class="fa-solid fa-map-location-dot"></i> සිතියම බලන්න
+                    </a>
+                </div>
+            </div>
+        `;
+    });
+}
 function renderReportPreview() {
         const selectedMonth = document.getElementById("adminMonthPicker").value;
         if (!selectedMonth) return;
